@@ -5,7 +5,7 @@
 % authors: Diana Khoromskaia, Nicolas Cuny and Guillaume Salbreux
 % date last edited: 14/02/2023
 
-function Epithelia_Dynamics(l_open,dt, tmax, FixedPar, ProfileFile, dtmax, Adaptive, xi, tol, P0, thalf_P)
+function Epithelia_Dynamics(l_open, dt, tmax, FixedPar, ProfileFile, dtmax, Adaptive, xi, tol, P0, thalf_P)
 % arguments are:
 % l_open - value of la at which is situated the free boundary (has to be between 0 and 1)
 % dt - initial time step
@@ -53,9 +53,6 @@ optode_nem = bvpset('RelTol', 1e-4, 'AbsTol', 1e-6, 'stats','on','Vectorized', '
 
 % set time parameters
 t = 0;
-%dtmax = 1e-5;
-%tmax = timesteps*dt;
-%thalf = 0.01;
 tsigma = 0.002;
 
 %% sizes of different grids
@@ -79,15 +76,20 @@ sinit = svec1;
 Xinit = X;
 Zinit = Z;
 
+figure(1)
+plot(X(svec1),Z(svec1))
+axis('equal')
+axis([0, 2, 0, 2])
+
 %% initialise pressure and output directory, depending on FixedPar
 
 if strcmp(FixedPar,'V')
     dir1 = strcat('Dynamics_FixedV_K=',num2str(K));
 elseif strcmp(FixedPar,'P')
     if P0 ~= 0
-        dir1 = strcat('Dynamics_FixedP_P0=',num2str(P0),'_thalfP=',num2str(thalf_P),'_K=',num2str(K));
+        dir1 = strcat('Dynamics_FixedP_P0=',num2str(P0),'_thalfP=',num2str(thalf_P),'_lo=',num2str(l_open));
     else
-        dir1 = strcat('Dynamics_FixedP_K=',num2str(K));
+        dir1 = strcat('Dynamics_FixedP_lo=',num2str(l_open));
     end
 end
 P = P0*(1-sigmoidal(0,thalf_P,tsigma));
@@ -103,7 +105,7 @@ P = P0*(1-sigmoidal(0,thalf_P,tsigma));
 
 zetasrect=0.002; %width of the sigmoidal defining the 'Rectangle' active profile
         
-[zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93] = initialiseprofiles(ProfileFile, sgrid, svec1, L, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect);
+[zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect);
 
 %% output files:
 mkdir(dir2);
@@ -111,7 +113,7 @@ copyfile(ProfileFile,strcat(dir2,'/profiles_file.dat'));
 cd(dir2);
 
 % plot profiles to check:
-figure(1)
+figure(2)
 subplot(2,2,1)
 plot(svec1, zeta(svec1), svec1, dszeta(svec1));
 legend('\zeta','\partial_s\zeta');
@@ -125,7 +127,7 @@ subplot(2,2,4)
 plot(svec1, zetacnem(svec1), svec1, dszetacnem(svec1));
 legend('\zeta_{cn}','\partial_s\zeta_{cn}');
 
-saveas(figure(1),'activeprofiles.fig');
+%saveas(figure(1),'activeprofiles.fig');
 %saveas(figure(1),'activeprofiles.png');
 
 seval=0;

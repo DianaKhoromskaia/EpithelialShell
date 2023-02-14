@@ -1,15 +1,11 @@
-function [zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93] = initialiseprofiles(ProfileFile, sgrid, svec1, L, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect)
+function [zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect)
 % initialises profiles of active contributions to tensions or moments
 
 zetavec = zeros(size(sgrid));
-dszetavec = zeros(size(svec1));
 zetacvec = zeros(size(sgrid));
-dszetacvec = zeros(size(svec1));
 zetanemvec = zeros(size(sgrid));
-dszetanemvec = zeros(size(svec1));
 zetacnemvec = zeros(size(sgrid));
-dszetacnemvec = zeros(size(svec1));
-ds = L/(npoints-1);
+ds = L0/(npoints-1);
 onevec = ones(size(sgrid));
 
 write9=0;
@@ -119,10 +115,10 @@ dszetanemvec = gradient(zetanem(svec1),ds);
 dszetacnemvec = gradient(zetacnem(svec1),ds); 
 
 
-dszeta = griddedInterpolant(svec1, [0 dszetavec(2:end-1) 0], 'spline'); 
-dszetac = griddedInterpolant(svec1, [0 dszetacvec(2:end-1) 0], 'spline'); 
-dszetanem = griddedInterpolant(svec1, [0 dszetanemvec(2:end-1) 0], 'spline'); 
-dszetacnem = griddedInterpolant(svec1, [0 dszetacnemvec(2:end-1) 0], 'spline'); 
+dszeta = griddedInterpolant(svec1, [0 dszetavec(2:end)], 'spline'); 
+dszetac = griddedInterpolant(svec1, [0 dszetacvec(2:end)], 'spline'); 
+dszetanem = griddedInterpolant(svec1, [0 dszetanemvec(2:end)], 'spline'); 
+dszetacnem = griddedInterpolant(svec1, [0 dszetacnemvec(2:end)], 'spline'); 
 
 fclose(fid);
 

@@ -10,8 +10,8 @@ zvec = z0*sone+R0*(sone-cos(svec1/R0));
 Qinit = dlmread('Qinit.dat','\t');
 dsw0 = Qinit(1,1);
 dswL = dsw0;
-Q = griddedInterpolant(L0*Qinit(2,:),Qinit(3,:),'spline' );
-dsQ = griddedInterpolant(L0*Qinit(2,:),Qinit(4,:), 'spline');
+Q = griddedInterpolant(pi*R0*Qinit(2,:),Qinit(3,:),'spline' );
+dsQ = griddedInterpolant(pi*R0*Qinit(2,:),Qinit(4,:), 'spline');
 
 C1 = griddedInterpolant(svec1, c1vec, 'linear');
 C2 = griddedInterpolant(svec1, c2vec, 'linear');

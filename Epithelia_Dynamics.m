@@ -3,9 +3,9 @@
 % Code for the Publication "Active morphogenesis of patterned epithelial shells"
 
 % authors: Diana Khoromskaia, Nicolas Cuny and Guillaume Salbreux
-% date last edited: 25/03/2022
+% date last edited: 14/02/2023
 
-function Dynamics_Epithelia(l_open,dt, tmax, FixedPar, ProfileFile, dtmax, Adaptive, xi, tol, P0, thalf_P)
+function Epithelia_Dynamics(l_open,dt, tmax, FixedPar, ProfileFile, dtmax, Adaptive, xi, tol, P0, thalf_P)
 % arguments are:
 % l_open - value of la at which is situated the free boundary (has to be between 0 and 1)
 % dt - initial time step

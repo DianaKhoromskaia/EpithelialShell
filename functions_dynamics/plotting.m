@@ -1,4 +1,5 @@
-function plotting(svecuni, C1, C2, C, dsC1, dsC, sol, t, told, P1, P, P0, V, V0, R0, X0, U, zetanem, X, Z, Uinit, Xinit, Zinit, sinit, vidObj1, FixedPar)
+function plotting(svecuni, sol, t, told, P, P0, V, V0, R0, X0, X, Z, Xinit, Zinit, sinit)
+
 
 set(0,'defaultfigurecolor',[1 1 1])
 
@@ -13,28 +14,39 @@ set(0,'defaultfigurecolor',[1 1 1])
     title('P')
     subplot(2,4,5)
     hold on
-    plot(told, V/V0,'r.');
+    %plot(told, max(abs(sol.y(2,:))),'b.');
+    %plot(told, sol.y(2,1),'b.');
+    plot(told, V/V0,'r.');%, told, V0,'k.');
     title('V')
     subplot(2,4,6)
     hold on;
+    %plot(sinit, Uinit(sinit), sol.x, U(sol.x))
+    %plot(sol.x, U(sol.x))
     plot(told, sol.y(10,end),'k.');
+    %plot(sol.x, sol.y(10,:),'r.')
     title('I(L)')
+%     plot(told, abs(P1(2)/P),'r.')
+%     title('|f_c/P|')
+    %plot(sol.x, zetanem(sol.x))
+    %legend('\zeta_n q')%('u_k^k')
     axis tight
     subplot(1,2,2)
     %clf
     % plot original shape:
     plot(Xinit(sinit), Zinit(sinit), 'b'); hold on
     plot(-Xinit(sinit), Zinit(sinit), 'b')
+    
     % plot shape at time t:
+%     plotshape3D_2(Xfull,Zfull,svecuni,zeta, gamma+A)
     plot(X(svecuni), Z(svecuni), 'r','LineWidth',2);
     plot(-X(svecuni), Z(svecuni), 'r','LineWidth',2); hold off;
+    %plot(0,X0, 'ob'); 
     axis square
     axis([-2.5*R0 2.5*R0 X0-2.5*R0 X0+2.5*R0])
      title(strcat('t=',num2str(t)))
-    %writeVideo(vidObj1, getframe(gcf));
-    saveas(figure(6),'currentshape','png');
+    %saveas(figure(6),'currentshape','png');
     saveas(figure(6),'currentshape','fig');
     drawnow;
-    
+
 end
 

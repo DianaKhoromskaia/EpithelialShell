@@ -1,5 +1,5 @@
-function [zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem] = initialiseprofiles(zeta_Profile, zeta_const, zeta_la, zeta_sigma, zeta_par, zetac_Profile, zetac_const, zetac_la, zetac_sigma, zetac_par, zetanem_Profile, zetanem_const, zetanem_la, zetanem_sigma, zetanem_par, zetacnem_Profile, zetacnem_const, zetacnem_la, zetacnem_sigma, zetacnem_par, sgrid, svec1, L, npoints, L0, s0, Q, dsQ, t, thalf, tsigma)
-%% Initialising profiles of active tensions and moments and their spatial derivatives as spline interpolants.
+function [zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93] = initialiseprofiles(ProfileFile, sgrid, svec1, L, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect)
+% initialises profiles of active contributions to tensions or moments
 
 zetavec = zeros(size(sgrid));
 dszetavec = zeros(size(svec1));
@@ -9,62 +9,95 @@ zetanemvec = zeros(size(sgrid));
 dszetanemvec = zeros(size(svec1));
 zetacnemvec = zeros(size(sgrid));
 dszetacnemvec = zeros(size(svec1));
-h = L/(npoints-1);
+ds = L/(npoints-1);
 onevec = ones(size(sgrid));
 
-% define zeta(s) profile: (isotropic tension)
-switch zeta_Profile
-    case 'Gaussian'
-            zetavec = superGaussian(s0(sgrid), zeta_la*L0, zeta_par, zeta_const, zeta_sigma*L0, 1);
-    case 'Sigmoidal'
-        if zeta_la==1
-            zetavec = zeta_const*onevec;  
-        else
-            zetavec = zeta_const*onevec+zeta_par*sigmoidal(s0(sgrid), zeta_la*L0, zeta_sigma*L0); 
-        end
-end
-  
-% define zetac(s) profile: (isotropic bending moment)
-switch zetac_Profile
-    case 'Gaussian'
-            zetacvec = superGaussian(s0(sgrid), zetac_la*L0, zetac_par, zetac_const, zetac_sigma*L0, 1);
-    case 'Sigmoidal'
-        if zetac_la==1
-            zetacvec = zetac_const*onevec;  
-        else
-            zetacvec = zetac_const*onevec+zetac_par*sigmoidal(s0(sgrid), zetac_la*L0, zetac_sigma*L0); 
-        end
+write9=0;
+write91=0;
+write92=0;
+write93=0;
+
+zeta_controls=[];
+zeta_profiles=[];
+zeta_consts=[];
+zeta_las=[];
+zeta_facs=[];
+zeta_sigmas=[];
+zeta_thalfs=[];
+N_regions=0;
+
+fid=fopen(ProfileFile);
+tline=fgetl(fid);
+
+if tline==-1
+    fprintf('\n%s\n','<strong>Warning:</strong> Profiles file is empty')
 end
 
-% define zetanem(s) profile: (nematic tension)
-switch zetanem_Profile
-    case 'Gaussian'
-        zetanemvec = Q(sgrid).*superGaussian(s0(sgrid), zetanem_la*L0, zetanem_par, zetanem_const, zetanem_sigma*L0, 1);
-    case 'Sigmoidal'
-        if zetanem_la==1
-            zetanemvec = zetanem_const*Q(sgrid);
-        else
-            zetanemvec = zetanem_const*Q(sgrid)+zetanem_par*Q(sgrid).*sigmoidal(s0(sgrid), zetanem_la*L0, zetanem_sigma*L0);
-        end
+dir2=dir1;
+
+while tline ~= -1
+    N_regions=N_regions+1;
+    tline=split(tline);
+    
+    % get the active profile parameters
+    zeta_control=tline{1};
+    zeta_profile=tline{2};
+    zeta_const=str2double(tline{3});
+    zeta_la=str2double(tline{4});
+    zeta_fac=str2double(tline{5});
+    zeta_sigma=str2double(tline{6});
+    zeta_thalf=str2double(tline{7});
+
+    zeta_controls=[zeta_controls, {zeta_control}];
+    zeta_profiles=[zeta_profiles, {zeta_profile}];
+    zeta_consts=[zeta_consts, zeta_const];
+    zeta_las=[zeta_las, zeta_la];
+    zeta_facs=[zeta_facs, zeta_fac];
+    zeta_sigmas=[zeta_sigmas, zeta_sigma];
+    zeta_thalfs=[zeta_thalfs, zeta_thalf];
+    
+    if strcmp(zeta_profile,'Sigmoidal') && zeta_la==1
+        dir2=strcat(dir2,'_',zeta_control,'_',zeta_profile,'_la=',num2str(zeta_la),'_fac=',num2str(zeta_const),'_sigma=',num2str(zeta_sigma),'_thalf=',num2str(zeta_thalf));
+    else
+        dir2=strcat(dir2,'_',zeta_control,'_',zeta_profile,'_la=',num2str(zeta_la),'_fac=',num2str(zeta_fac),'_sigma=',num2str(zeta_sigma),'_thalf=',num2str(zeta_thalf));
+    end
+
+    % define zeta profile of the considered region
+    switch zeta_profile
+        case 'Gaussian'
+                zeta = (1-sigmoidal(t,zeta_thalf,tsigma))*superGaussian(s0(sgrid), zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, 1);
+        case 'Sigmoidal'
+            if zeta_la==1
+                zeta = (1-sigmoidal(t,zeta_thalf,tsigma))*zeta_const*onevec;  
+            else
+                zeta = (1-sigmoidal(t,zeta_thalf,tsigma))*zeta_const*onevec+zeta_fac*sigmoidal(s0(sgrid), zeta_la*L0, zeta_sigma*L0); 
+            end
+        case 'Rectangle'
+                zeta=(1-sigmoidal(t,zeta_thalf,tsigma))*rect(s0(sgrid),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
+    end
+
+    % add to the global profile
+    switch zeta_control 
+        case 'Tension'
+            zetavec = zetavec+zeta;
+            write9=1;
+        case 'Bending'
+            zetacvec = zetacvec+zeta;
+            write91=1;
+        case 'Nematic'
+            zetanemvec = zetanemvec+zeta;
+            write92=1;
+        case 'BendingNematic'
+            zetacnemvec = zetacnemvec+zeta;
+            write93=1;
+    end
+
+    tline=fgetl(fid); % read next line
 end
 
-% define zetacnem(s) profile: (nematic bending moment)
-switch zetacnem_Profile
-    case 'Gaussian'
-        zetacnemvec = Q(sgrid).*superGaussian(s0(sgrid), zetacnem_la*L0, zetacnem_par, zetacnem_const, zetacnem_sigma*L0, 1);
-    case 'Sigmoidal'
-        if zetacnem_la==1
-            zetacnemvec = zetacnem_const*Q(sgrid);
-        else
-            zetacnemvec = zetacnem_const*Q(sgrid)+zetacnem_par*Q(sgrid).*sigmoidal(s0(sgrid), zetacnem_la*L0, zetacnem_sigma*L0);
-        end
-end
-
-% time sigmoidal:
-zetavec = (1-sigmoidal(t,thalf,tsigma))*zetavec;
-zetacvec = (1-sigmoidal(t,thalf,tsigma))*zetacvec;
-zetanemvec = (1-sigmoidal(t,thalf,tsigma))*zetanemvec;
-zetacnemvec = (1-sigmoidal(t,thalf,tsigma))*zetacnemvec;
+% Nematic profiles:
+zetanemvec = zetanemvec.*Q(sgrid);
+zetacnemvec = zetacnemvec.*Q(sgrid);
 
 % save as interpolants:
 zeta = griddedInterpolant(sgrid, zetavec, 'spline');
@@ -74,35 +107,24 @@ zetacnem = griddedInterpolant(sgrid, zetacnemvec, 'spline');
 
 
 % define dszeta(s) profile: (isotropic tension)
-if (zeta_la<1)||strcmp(zeta_Profile,'Gaussian')
-    dszetavec = gradient(zeta(svec1),h); 
-end
+dszetavec = gradient(zeta(svec1),ds); 
 
 % define dszetac(s) profile: (isotropic bending)
-if (zetac_la<1)||strcmp(zetac_Profile,'Gaussian')
-    dszetacvec = gradient(zetac(svec1),h); 
-end
+dszetacvec = gradient(zetac(svec1),ds); 
 
 % define dszetanem(s) profile: (nematic tension)
-if (zetanem_la==1)&&strcmp(zetanem_Profile,'Sigmoidal')
-    dszetanemvec = zetanem_const*dsQ(svec1);
-    dszetanemvec = (1-sigmoidal(t,thalf,tsigma))*dszetanemvec;
-else    
-    dszetanemvec = gradient(zetanem(svec1),h); 
-end
+dszetanemvec = gradient(zetanem(svec1),ds); 
 
 % define dszetacnem(s) profile: (nematic bending)
-if (zetacnem_la==1)&&strcmp(zetacnem_Profile,'Sigmoidal')
-    dszetacnemvec = zetacnem_const*dsQ(svec1);
-    dszetacnemvec = (1-sigmoidal(t,thalf,tsigma))*dszetacnemvec;
-else    
-    dszetacnemvec = gradient(zetacnem(svec1),h); 
-end
+dszetacnemvec = gradient(zetacnem(svec1),ds); 
+
 
 dszeta = griddedInterpolant(svec1, [0 dszetavec(2:end-1) 0], 'spline'); 
 dszetac = griddedInterpolant(svec1, [0 dszetacvec(2:end-1) 0], 'spline'); 
 dszetanem = griddedInterpolant(svec1, [0 dszetanemvec(2:end-1) 0], 'spline'); 
 dszetacnem = griddedInterpolant(svec1, [0 dszetacnemvec(2:end-1) 0], 'spline'); 
+
+fclose(fid);
 
 end
 

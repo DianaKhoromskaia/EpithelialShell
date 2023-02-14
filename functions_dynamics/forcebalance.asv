@@ -43,6 +43,8 @@ try
                  solinit,optode, U, dsU, C1, C2, C, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, K, xi, FixedPar, t, P0, thalf_P, tsigma);
 catch ME
     ME
+    ME.stackfile
+    ME.stack.name
     disp(strcat('could not find solution at time t=',num2str(t)));
     SolFound = false;
     sol = solold; %this works only if t>0

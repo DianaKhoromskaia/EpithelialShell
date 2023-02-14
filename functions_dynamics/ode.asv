@@ -8,7 +8,7 @@ function dvds = ode(s, v, varpar, U, dsU, C1, C2, C, dsC, Psi, X, Z, X0, L, L0, 
 if strcmp(FixedPar,'V')
     P = varpar(1);
 elseif strcmp(FixedPar,'P')
-    P = P0*(1-sigmoidal(t,thalf_P,tsigma))-etap*varpar(1); %here varpar(1)=dV/dt
+    P = P0*sigmoidal(t,thalf_P,tsigma)-etap*varpar(1); %here varpar(1)=dV/dt
 end
 
 fc=varpar(2);

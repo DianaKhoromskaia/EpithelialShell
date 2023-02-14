@@ -5,8 +5,9 @@
 % authors: Diana Khoromskaia, Nicolas Cuny and Guillaume Salbreux
 % date last edited: 25/03/2022
 
-function Dynamics_Epithelia(dt, tmax, FixedPar, ProfileFile, dtmax, Adaptive, xi, tol, P0, thalf_P)
+function Dynamics_Epithelia(l_open,dt, tmax, FixedPar, ProfileFile, dtmax, Adaptive, xi, tol, P0, thalf_P)
 % arguments are:
+% l_open - value of la at which is situated the free boundary (has to be between 0 and 1)
 % dt - initial time step
 % tmax - end time
 % FixedPar - set to 'V' or 'P' for fixed or free volume, respectively
@@ -64,8 +65,8 @@ npoints = 1e+6;     % for initialising functions on sphere, and for derivatives
 %% initialise spherical shape on half of s-interval
 z0 = 0.; %offset in z-direction
 L = pi*R0;
-L0 = pi*R0;
-[C1, C2, C, dsC1, dsC2, dsC, Psi, X, Z, X0, xintegral, svec1, U, dsU, Q, dsQ, dsw0, dswL, fs, s0, Qgrid] = initialisesphere(L0, R0, z0, npoints);
+L0 = l_open*pi*R0;
+[C1, C2, C, dsC1, dsC, Psi, X, Z, X0, xintegral, svec1, U, dsU, Q, dsQ, dsw0, dswL, s0] = initialisesphere(L0, R0, z0, npoints);
 eps1 = eps1abs*L;
 eps2 = eps2abs*L;
 V0 = (4/3)*pi*R0^3;

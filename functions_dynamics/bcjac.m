@@ -17,10 +17,13 @@ dbcdya(6,9) = 1;
 dbcdya(11,10) = 1;
 
 %partial derivatives wrt yb
-dbcdyb(7,3) = 1;
+dbcdyb(7,4) = 1;
 dbcdyb(8,6) = 1;
 dbcdyb(9,7) = 1;
-dbcdyb(10,8) = 1;
+
+dbcdyb(10,1) = eta+etab;
+dbcdyb(10,8) = (etab-eta)*cos(Psi(L))./X(L);
+dbcdyb(10,2) = etab*C(L)+eta*(C2(L)-C1(L));
 
 %dbcdyb(9,10) = 1/xi;
 %dbcdyb(12,10)= 1;

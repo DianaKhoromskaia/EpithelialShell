@@ -2,9 +2,9 @@ function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew,
 %Lagrangian update of everything:
     
     svec3 = [0. svec((svec > eps1)&(svec < (L-eps2))) L];
-    svec2 = svec3(2:end-1); % vector of svec3 without endpoints
+    svec2 = svec3(2:end); % vector of svec3 without endpoints
     
-    snew = [0. snewfun(svec2) Lnew]; %snewvec;%
+    snew = [0. snewfun(svec3(2:end-1)) Lnew]; %snewvec;%
     
     sgrid = snew;
     %sgridnem = [0. snew((snew > eps1)&(snew < (Lnew-eps2))) Lnew];%snew;
@@ -12,30 +12,29 @@ function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew,
     ds = Lnew/(npoints-1);
     
     Cnew0 = C(0) + dt*(mss(0)-2*kappa*C(0)-zetac(0)+zetacnem(0))/etacb;
-    CnewL = C(L) + dt*(mss(L)-2*kappa*C(L)-zetac(L)+zetacnem(L))/etacb;
    
     %% Update shape on Lagrange grid:
-    Xnew = griddedInterpolant( snew, [0. (X(svec2) + dt*(sin(Psi(svec2)).*vn(svec2) + cos(Psi(svec2)).*vs(svec2))) 0.] , 'spline');
-    Psinew = griddedInterpolant( snew, [0. (Psi(svec2) + dt*( -dsvn(svec2) + C2(svec2).*vs(svec2))) pi], 'spline');
+    Xnew = griddedInterpolant( snew, [0. (X(svec2) + dt*(sin(Psi(svec2)).*vn(svec2) + cos(Psi(svec2)).*vs(svec2)))] , 'spline');
+    Psinew = griddedInterpolant( snew, [0. (Psi(svec2) + dt*( -dsvn(svec2) + C2(svec2).*vs(svec2)))], 'spline');
     Znew = griddedInterpolant(snew, Z(svec3)+dt*(-cos(Psi(svec3)).*vn(svec3) + sin(Psi(svec3)).*vs(svec3)), 'spline');
 
     %% Update curvatures on Lagrange grid:
     %jac = sqrt(ones(size(svec2)) + 2*dt*(vn(svec2).*C2(svec2)+dsvs(svec2)) + (dt)^2*((vn(svec2).*C2(svec2)+dsvs(svec2)).^2+(dsvn(svec2)-C2(svec2).*vs(svec2)).^2));%
     jac = ones(size(svec2)) + dt*(vn(svec2).*C2(svec2)+dsvs(svec2)); 
-    Cnew = griddedInterpolant( snew, [Cnew0 (C(svec2) + dt*( (mss(svec2)-2*kappa*C(svec2)-zetac(svec2)+zetacnem(svec2))/etacb) ) CnewL], 'spline');
-    dsCnew = griddedInterpolant( snew, [0. (dsC(svec2) + dt*( (tns(svec2)+2*cos(Psi(svec2)).*zetacnem(svec2)./X(svec2)-2*kappa*dsC(svec2)-dszetac(svec2)+dszetacnem(svec2))/etacb))./jac 0.], 'spline');
+    Cnew = griddedInterpolant( snew, [Cnew0 (C(svec2) + dt*( (mss(svec2)-2*kappa*C(svec2)-zetac(svec2)+zetacnem(svec2))/etacb) )], 'spline');
+    dsCnew = griddedInterpolant( snew, [0. (dsC(svec2) + dt*( (tns(svec2)+2*cos(Psi(svec2)).*zetacnem(svec2)./X(svec2)-2*kappa*dsC(svec2)-dszetac(svec2)+dszetacnem(svec2))/etacb))./jac], 'spline');
     %dsCnewvec = gradient(Cnew(svec1),h);
     %dsCnew = griddedInterpolant( svec1, [0. dsCnewvec(2:end-1) 0.], 'spline'); 
     
-    C1new = griddedInterpolant(snew, [Cnew0/2 C1(svec2)+dt*(-dsvn(svec2).*cos(Psi(svec2))./X(svec2) - vn(svec2).*C1(svec2).*C1(svec2) + vs(svec2).*dsC1(svec2) ) CnewL/2], 'spline');  %
+    C1new = griddedInterpolant(snew, [Cnew0/2 C1(svec2)+dt*(-dsvn(svec2).*cos(Psi(svec2))./X(svec2) - vn(svec2).*C1(svec2).*C1(svec2) + vs(svec2).*dsC1(svec2) )], 'spline');  %
     C2new = griddedInterpolant(snew, Cnew(snew)-C1new(snew), 'spline');
     
-    dsC1new = griddedInterpolant( snew, [0. cos(Psinew(snewfun(svec2))).*(C2new(snewfun(svec2))-C1new(snewfun(svec2)))./Xnew(snewfun(svec2)) 0.], 'spline');
+    dsC1new = griddedInterpolant( snew, [0. cos(Psinew(snewfun(svec2))).*(C2new(snewfun(svec2))-C1new(snewfun(svec2)))./Xnew(snewfun(svec2))], 'spline');
     %dsC1new = griddedInterpolant( snewfun(svec3), [0. (dsC1(svec2)+dt*(-cos(Psi(svec2)).*(ds2vn(svec2) - cos(Psi(svec2)).*dsvn(svec2)./X(svec2))./X(svec2) - 2*vn(svec2).*dsC1(svec2).*(C1(svec2))))./jac  0.], 'spline' );
     %% update U on Lagrange grid:
     Unew = griddedInterpolant(snew, U(svec3) + dt*((ones(size(svec3))+U(svec3)).*vkk(svec3)), 'spline');
     gradU = gradient(Unew(svec1),ds);
-    dsUnew = griddedInterpolant(svec1, [0 gradU(2:end-1) 0], 'spline');
+    dsUnew = griddedInterpolant(svec1, [0 gradU(2:end)], 'spline');
     %fsnew = griddedInterpolant(snew, fs(svec3) + dt*(dsvs(svec3)+C2(svec3).*vn(svec3))./fs(svec3), 'spline');
     
     %% s0 on new shape, if la<1:

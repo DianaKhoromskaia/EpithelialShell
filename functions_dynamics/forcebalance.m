@@ -25,10 +25,7 @@ elseif t>0
     solold = sol;
     
     sgrid = snewfun(solold.x);
-    %eps1=1e-2*L;
-    %eps2=1e-2*L;
     sgrid = [0. sgrid(2:(end-1)) L];
-    %sgrid = [0 sgrid((sgrid > eps1)&(sgrid < (L-eps2))) L];
     
     fint = integral(@(s) X(s).*fext(s), 0, L);
     
@@ -63,13 +60,6 @@ sfun_dt = griddedInterpolant( [0. sint(2:(end-1))+delt*Vint(9,2:(end-1)) Lnew_dt
 snewfun_dt = griddedInterpolant( [0. sint(2:(end-1)) L], [0. sint(2:(end-1))+delt*Vint(9,2:(end-1)) Lnew_dt], 'spline'); % interpolant of snew(s)
 snewvec_dt = [0. sint(2:(end-1))+delt*Vint(9,2:(end-1)) Lnew_dt]; % vector snew
 
-% %% saving new arc length with dt=delt
-% Lnew_dt = Vint(9,end);
-% eps1new_dt = eps1abs*Lnew_dt;
-% 
-% sfun_dt = griddedInterpolant( Vint(9,:), sint, 'spline'); % interpolant of s(snew)
-% snewfun_dt = griddedInterpolant( sint, Vint(9,:), 'spline'); % interpolant of snew(s)
-% snewvec_dt = Vint(9,:); % vector snew
 
 %% saving new arc length with dt=delt/2
 Lnew_dthalf = L + (delt/2)*Vint(9,end);
@@ -78,22 +68,7 @@ eps1new_dthalf = eps1abs*Lnew_dt;
 sfun_dthalf = griddedInterpolant( [0. sint(2:(end-1))+(delt/2)*Vint(9,2:(end-1)) Lnew_dthalf], [0. sint(2:(end-1)) L], 'spline'); % interpolant of s(snew)
 snewfun_dthalf = griddedInterpolant( [0. sint(2:(end-1)) L], [0. sint(2:(end-1))+(delt/2)*Vint(9,2:(end-1)) Lnew_dthalf], 'spline'); % interpolant of snew(s)
 snewvec_dthalf = [0. sint(2:(end-1))+(delt/2)*Vint(9,2:(end-1)) Lnew_dthalf]; % vector snew
-% 
-% if strcmp(Adaptive,'On')
-%     Lnew_dthalf = sol_half.y(9,end);
-%     eps1new_dthalf = eps1abs*Lnew_dt;
-% 
-%     sfun_dthalf = griddedInterpolant(sol_half.y(9,:), sol_half.x, 'spline'); % interpolant of s(snew)
-%     snewfun_dthalf = griddedInterpolant(sol_half.x, sol_half.y(9,:),'spline'); % interpolant of snew(s)
-%     snewvec_dthalf = sol_half.y(9,:); % vector snew
-% else
-%     Lnew_dthalf = Lnew_dt;
-%     eps1new_dthalf = eps1new_dt;
-% 
-%     sfun_dthalf = sfun_dt; % interpolant of s(snew)
-%     snewfun_dthalf = snewfun_dt; % interpolant of snew(s)
-%     snewvec_dthalf = snewvec_dt; % vector snew
-% end
+
 %% interpolants of functions and derivatives
 %tss = griddedInterpolant(sint, Vint(1,:), 'spline');
 dsvs = griddedInterpolant(sint, Vint(1,:), 'spline');

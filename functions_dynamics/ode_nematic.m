@@ -1,8 +1,7 @@
 function dvds = ode_nematic(s, v, varpar, Psi, X, L, lc)
 % rhs for ode for the vector v = (vs, dsvs, vn, dsvn, mss, dsmss, dV(s), dX(s), s0(s), U), solved starting from south pole s=0
-
 dsw0 = varpar(1);
-dswL = varpar(2);
+%dswL = varpar(2);
 onevec = ones(size(s));
 
 q = v(1,:);
@@ -28,12 +27,12 @@ dvds = [    dsq;
             dsw0*onevec];
 
  % specify force balance at NP:       
-        indices = find(~(s-L));
-        zervec = zeros(size(s(indices)));
-        onevec = ones(size(s(indices)));
-        
-        dvds(:,indices) =   [   zervec;
-            dswL*onevec]; 
+%         indices = find(~(s-L));
+%         zervec = zeros(size(s(indices)));
+%         onevec = ones(size(s(indices)));
+%         
+%         dvds(:,indices) =   [   zervec;
+%             dswL*onevec]; 
         
 % figure(1)
 % subplot(2,1,1)

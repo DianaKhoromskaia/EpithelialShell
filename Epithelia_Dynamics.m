@@ -33,7 +33,7 @@ etacb = (h^2)*etab; % bulk bending viscosity
 etap = 1e-4; % pressure viscosity (for FixedPar='P')
 kappa = 1; % bending modulus
 %xi = 0; %normal friction coefficient
-K = 110; % bulk elastic modulus
+K = 500; % bulk elastic modulus
 lc = 0.1*R0; % nematic length scale in units of R0
 
 Plotting = 'Off'; % set 'On' or 'Off' to save results as movies
@@ -61,12 +61,12 @@ npoints = 1e+6;     % for initialising functions on sphere, and for derivatives
 
 %% initialise spherical shape on half of s-interval
 z0 = 0.; %offset in z-direction
-L = pi*R0;
 L0 = l_open*pi*R0;
-[C1, C2, C, dsC1, dsC, Psi, X, Z, X0, xintegral, svec1, U, dsU, Q, dsQ, dsw0, dswL, s0] = initialisesphere(L0, R0, z0, npoints);
+L = L0;
+[C1, C2, C, dsC1, dsC, Psi, X, Z, X0, xintegral, svec1, U, dsU, Q, dsQ, dsw0, s0] = initialisesphere(L0, R0, z0, npoints, lc, optode_nem);
 eps1 = eps1abs*L;
 eps2 = eps2abs*L;
-V0 = (4/3)*pi*R0^3;
+V0 = (4/3)*pi*R0^3*(2+cos(pi*l_open))*sin(pi*l_open/2)^4;
 V = V0;
 
 sgrid = linspace(0,L0,300);
@@ -79,7 +79,7 @@ Zinit = Z;
 figure(1)
 plot(X(svec1),Z(svec1))
 axis('equal')
-axis([0, 2, 0, 2])
+axis([0, 2*R0, 0, 2*R0])
 
 %% initialise pressure and output directory, depending on FixedPar
 
@@ -216,7 +216,7 @@ while t < tmax
             [C1_dt, dsC1_dt, C2_dt, C_dt, dsC_dt, X_dt, Psi_dt, Z_dt, U_dt, dsU_dt, zeta_dt, dszeta_dt, zetac_dt, dszetac_dt, zetanem_dt, dszetanem_dt, zetacnem_dt, dszetacnem_dt, xintegral_dt, solnem_dt, s0_dt, s0inv_dt, Q_dt] = ...
                 evolvefunctions_t0(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, ...
                 vs, dsvs, vkk, vn, dsvn, mss, tns, ...
-                U, C1, dsC1, C2, C, dsC, kappa, X, Psi, Z, snewfun_dt, sfun_dt, t, dt, tsigma, L, Lnew_dt, L0, eps1, eps2, etacb, npoints, dsw0, dswL, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect);
+                U, C1, dsC1, C2, C, dsC, kappa, X, Psi, Z, snewfun_dt, sfun_dt, t, dt, tsigma, L, Lnew_dt, L0, eps1, eps2, etacb, npoints, dsw0, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect);
         else
             [C1_dt, dsC1_dt, C2_dt, C_dt, dsC_dt, X_dt, Psi_dt, Z_dt, U_dt, dsU_dt, zeta_dt, dszeta_dt, zetac_dt, dszetac_dt, zetanem_dt, dszetanem_dt, zetacnem_dt, dszetacnem_dt, xintegral_dt, solnem_dt, s0_dt, s0inv_dt, Q_dt] = ...
                 evolvefunctions(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, ...
@@ -230,7 +230,7 @@ while t < tmax
                 [C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, dsC_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, U_dthalf, dsU_dthalf, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, dszetacnem_dthalf, xintegral_dthalf, solnem_dthalf, s0_dthalf, s0inv_dthalf, Q_dthalf] = ...
                     evolvefunctions_t0(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, ...
                     vs, dsvs, vkk, vn, dsvn, mss, tns, ...
-                    U, C1, dsC1, C2, C, dsC, kappa, X, Psi, Z, snewfun_dthalf, sfun_dthalf, t, dt/2, tsigma, L, Lnew_dthalf, L0, eps1, eps2, etacb, npoints, dsw0, dswL, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect);
+                    U, C1, dsC1, C2, C, dsC, kappa, X, Psi, Z, snewfun_dthalf, sfun_dthalf, t, dt/2, tsigma, L, Lnew_dthalf, L0, eps1, eps2, etacb, npoints, dsw0, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect);
             else
                 [C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, dsC_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, U_dthalf, dsU_dthalf, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, dszetacnem_dthalf, xintegral_dthalf, solnem_dthalf, s0_dthalf, s0inv_dthalf, Q_dthalf] = ...
                     evolvefunctions(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, ...

@@ -1,4 +1,4 @@
-function dvds = ode(s, v, varpar, U, dsU, C1, C2, C, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, K, xi, kb, x0b, FixedPar, t, P0, thalf_P, tsigma)
+function dvds = ode(s, v, varpar, U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, K, xi, kb, x0b, FixedPar, t, P0, thalf_P, tsigma)
 % rhs for ode for the vector v = (dsvs, vn, dsvn, mss, tns, dV(s), dX(s),
 % vs, dsnew(s), I(s)), solved on interval [0,L]
 %figure(60)
@@ -31,7 +31,7 @@ fextn = -xi*vn;
 
 onevec = ones(size(s));
 
-ds2vn = -cos(Psi(s)).*dsvn./X(s) - vn.*(C1(s).^2 + C2(s).^2) + vs.*dsC(s) - (mss - 2*kappa*C(s) - zetac(s) + zetacnem(s))/etacb;
+ds2vn = -cos(Psi(s)).*dsvn./X(s) - vn.*(C1(s).^2 + C2(s).^2) + vs.*dsC(s) - (mss - 2*kappa*(C(s)-C0) - zetac(s) + zetacnem(s))/etacb;
 
 tss = 2*K*U(s) + zeta(s) - zetanem(s) + (eta+etab)*dsvs + (etab-eta)*cos(Psi(s)).*vs./X(s) + (etab*C(s)+eta*(C2(s)-C1(s))).*vn;
 dstns = 2*C1(s).*(T+V) + (C1(s)+C2(s)).*tss - cos(Psi(s)).*tns./X(s) - P + cos(Psi(s)).*fc  - fextn;
@@ -59,7 +59,7 @@ dvds = [ds2vs;
         
         dvds(:,indices) =   [zervec;%-C2(0).*tns(indices);%zervec;
             zervec;
-            0.5*(-vn(indices).*(C1(0).^2 + C2(0).^2) - (mss(indices)-2*kappa*C(0)- zetac(0))/etacb);
+            0.5*(-vn(indices).*(C1(0).^2 + C2(0).^2) - (mss(indices)-2*kappa*(C(0)-C0)- zetac(0))/etacb);
             tns(indices);
             -0.5*P*onevec+C2(0).*(2*K*U(0) + zeta(0) - zetanem(0) + (eta+etab)*dsvs(indices) + etab*C(0)*vn(indices))+0.5*xi*vn(indices)+0.5*fc*onevec;%-0.5*P*onevec+C2(0).*tss(indices)+0.5*xi*vn(indices)+0.5*fc*onevec;
             zervec;

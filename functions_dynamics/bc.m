@@ -1,4 +1,4 @@
-function res = bc(yleft,yright, varpar,  U, dsU, C1, C2, C, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, K, xi, kb, x0b, FixedPar, t, P0, thalf_P, tsigma) 
+function res = bc(yleft,yright, varpar,  U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, K, xi, kb, x0b, FixedPar, t, P0, thalf_P, tsigma) 
 %v = (dsvs, vn, dsvn, mss, tns, dV(s), dX(s), vs, dsnew(s), I(s))
 
 res = [ yleft(3) - 0.; %dsvn(0)=0

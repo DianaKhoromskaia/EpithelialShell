@@ -34,6 +34,8 @@ function [zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, ze
                 end
             case 'Rectangle'
                 zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*rect(s0new(svec),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
+            case 'Linear'
+                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*linear(s0new(svec),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
         end
         
         % add to the global profile

@@ -15,7 +15,7 @@ function Epithelia_Dynamics(l_open, dt, tmax, FixedPar, ProfileFile, dtmax, Adap
 % form [ControlPar, ProfileType, param_const, param_la, param_fac, param_sigma, thalf],
 % each line corresponds to one active region with:
 % ControlPar : control parameter/ active effect: 'Tension', 'Bending', 'Nematic, 'BendingNematic'
-% ProfileType : 'Sigmoidal', 'Gaussian' or 'Rectangle'
+% ProfileType : 'Sigmoidal', 'Gaussian', 'Rectangle' or 'Linear'
 % param_const, param_la, param_fac, param_sigma, thalf : parameters defining the active profile in the region
 % dtmax - maximal time step
 % Adaptive - 'On' or 'Off'

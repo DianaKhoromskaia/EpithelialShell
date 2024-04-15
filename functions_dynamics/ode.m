@@ -33,8 +33,8 @@ onevec = ones(size(s));
 
 ds2vn = -cos(Psi(s)).*dsvn./X(s) - vn.*(C1(s).^2 + C2(s).^2) + vs.*dsC(s) - (mss - 2*kappa*C(s) - zetac(s) + zetacnem(s))/etacb;
 
-tss = 2*K*U(s) + zeta(s) - zetanem(s) + (eta+etab)*dsvs + (etab-eta)*cos(Psi(s)).*vs./X(s) + (etab*C(s)+eta*(C2(s)-C1(s))).*vn;
-dstns = 2*C1(s).*(T+V) + (C1(s)+C2(s)).*tss - cos(Psi(s)).*tns./X(s) - P + cos(Psi(s)).*fc  - fextn;
+tss = 2*K*U(s) + zeta(s) - zetanem(s) -2*kappa*C(s).*(C2(s)-0.5*C(s)) + (eta+etab)*dsvs + (etab-eta)*cos(Psi(s)).*vs./X(s) + (etab*C(s)+eta*(C2(s)-C1(s))).*vn;
+dstns = 2*C1(s).*(T+V-kappa*C(s).*(C1(s)-C2(s))) + (C1(s)+C2(s)).*tss - cos(Psi(s)).*tns./X(s) - P + cos(Psi(s)).*fc  - fextn;
 dsmss = tns + 2*cos(Psi(s)).*zetacnem(s)./X(s);
 
 ds2vs = -cos(Psi(s)).*(dsvs-cos(Psi(s)).*vs./X(s))./X(s) - (eta-etab)*C1(s).*C2(s).*vs/(eta+etab) - dsC(s).*vn - (etab*C(s)+eta*(C2(s)-C1(s))).*dsvn/(eta+etab) - (2*K*dsU(s)+dszeta(s))/(eta+etab)  + (dszetanem(s) + 2*cos(Psi(s)).*zetanem(s)./X(s))/(eta+etab) - C2(s).*tns./(eta+etab) - sin(Psi(s)).*fc/(eta+etab);

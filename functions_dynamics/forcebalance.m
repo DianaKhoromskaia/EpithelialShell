@@ -105,7 +105,7 @@ vs = griddedInterpolant(sint, Vint(8,:), 'spline');
 %vkk = griddedInterpolant(sint, (Vint(1,:)+zetanem(sint)-2*K*U(sint)-zeta(sint))/etab, 'spline');
 %dsvs = griddedInterpolant(sint, [((Vint(1,1)+zetanem(0)-2*K*U(0)-zeta(0))/etab-C(0)*Vint(2,1))/2 (Vint(1,2:end-1)+zetanem(sint(2:end-1))-2*K*U(sint(2:end-1))-zeta(sint(2:end-1)))/etab-cos(Psi(sint(2:end-1))).*Vint(8,2:end-1)./X(sint(2:end-1))-C(sint(2:end-1)).*Vint(2,2:end-1) ((Vint(1,end)+zetanem(L)-2*K*U(L)-zeta(L))/etab-C(L)*Vint(2,end))/2], 'spline');
 vkk = griddedInterpolant(sint, Vint(1,:)+C(sint).*Vint(2,:)+[Vint(1,1) cos(Psi(sint(2:end-1))).*Vint(8,2:end-1)./X(sint(2:end-1)) Vint(1,end)], 'spline');
-tss = griddedInterpolant(sint, 2*K*U(sint)+zeta(sint)-zetanem(sint)+(etab+eta)*Vint(1,:)+(etab*C(sint)+eta*(C2(sint)-C1(sint))).*Vint(2,:)+(etab-eta)*[Vint(1,1) cos(Psi(sint(2:end-1))).*Vint(8,2:end-1)./X(sint(2:end-1)) Vint(1,end)], 'spline');
+tss = griddedInterpolant(sint, 2*K*U(sint)+zeta(sint)-2*kappa*C(sint).*(C2(sint)-0.5*C(sint))-zetanem(sint)+(etab+eta)*Vint(1,:)+(etab*C(sint)+eta*(C2(sint)-C1(sint))).*Vint(2,:)+(etab-eta)*[Vint(1,1) cos(Psi(sint(2:end-1))).*Vint(8,2:end-1)./X(sint(2:end-1)) Vint(1,end)], 'spline');
 
 ds2vn = griddedInterpolant(sint, derivatives(3,:), 'spline');
 

@@ -77,7 +77,7 @@ mss = griddedInterpolant(sint, Vint(4,:), 'spline');
 tns = griddedInterpolant(sint, Vint(5,:), 'spline');
 vs = griddedInterpolant(sint, Vint(8,:), 'spline');
 vkk = griddedInterpolant(sint, Vint(1,:)+C(sint).*Vint(2,:)+[Vint(1,1) cos(Psi(sint(2:end))).*Vint(8,2:end)./X(sint(2:end))], 'spline');
-tss = griddedInterpolant(sint, 2*K*U(sint)+zeta(sint)-zetanem(sint)+(etab+eta)*Vint(1,:)+(etab*C(sint)+eta*(C2(sint)-C1(sint))).*Vint(2,:)+(etab-eta)*[Vint(1,1) cos(Psi(sint(2:end))).*Vint(8,2:end)./X(sint(2:end))], 'spline');
+tss = griddedInterpolant(sint, 2*K*U(sint)+zeta(sint)-zetanem(sint)-2*kappa*C(sint).*(C2(sint)-0.5*C(sint))+(etab+eta)*Vint(1,:)+(etab*C(sint)+eta*(C2(sint)-C1(sint))).*Vint(2,:)+(etab-eta)*[Vint(1,1) cos(Psi(sint(2:end))).*Vint(8,2:end)./X(sint(2:end))], 'spline');
 
 ds2vn = griddedInterpolant(sint, derivatives(3,:), 'spline');
 

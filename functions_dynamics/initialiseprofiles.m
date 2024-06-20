@@ -72,6 +72,8 @@ while tline ~= -1
                 zeta=(1-sigmoidal(t,zeta_thalf,tsigma))*rect(s0(sgrid),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
         case 'Linear'
                 zeta=(1-sigmoidal(t,zeta_thalf,tsigma))*linear(s0(sgrid),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
+        case 'Exponential'
+                zeta=(1-sigmoidal(t,zeta_thalf,tsigma))*(zeta_const*onevec+zeta_fac*exponential(s0(sgrid),zeta_la*L0,zeta_sigma*L0));
     end
 
     % add to the global profile

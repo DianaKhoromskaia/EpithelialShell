@@ -36,6 +36,8 @@ function [zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, ze
                 zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*rect(s0new(svec),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
             case 'Linear'
                 zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*linear(s0new(svec),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
+            case 'Exponential'
+                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*(zeta_const*ones(size(svec))+zeta_fac*exponential(s0new(svec),zeta_la*L0,zeta_sigma*L0));
         end
         
         % add to the global profile

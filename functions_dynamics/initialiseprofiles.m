@@ -1,4 +1,4 @@
-function [zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect)
+function [kappa, dskappa, zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93, write94] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect, kappa0)
 % initialises profiles of active contributions to tensions or moments
 
 zetavec = zeros(size(sgrid));
@@ -12,6 +12,7 @@ write9=0;
 write91=0;
 write92=0;
 write93=0;
+write94=0;
 
 zeta_controls=[];
 zeta_profiles=[];
@@ -90,6 +91,9 @@ while tline ~= -1
         case 'BendingNematic'
             zetacnemvec = zetacnemvec+zeta;
             write93=1;
+        case 'BendingModulus'
+            kappavec = kappavec+zeta;
+            write94=1;
     end
 
     tline=fgetl(fid); % read next line
@@ -103,7 +107,11 @@ zetacnemvec = zetacnemvec.*Q(sgrid);
 zeta = griddedInterpolant(sgrid, zetavec, 'spline');
 zetac = griddedInterpolant(sgrid, zetacvec, 'spline');
 zetanem = griddedInterpolant(sgrid, zetanemvec, 'spline');       
-zetacnem = griddedInterpolant(sgrid, zetacnemvec, 'spline');                   
+zetacnem = griddedInterpolant(sgrid, zetacnemvec, 'spline'); 
+if write94
+    kappa = griddedInterpolant(sgrid, kappavec, 'spline'); 
+else
+    kappa = griddedInterpolant(sgrid, kappa0*onevec, 'spline'); 
 
 
 % define dszeta(s) profile: (isotropic tension)
@@ -118,11 +126,14 @@ dszetanemvec = gradient(zetanem(svec1),ds);
 % define dszetacnem(s) profile: (nematic bending)
 dszetacnemvec = gradient(zetacnem(svec1),ds); 
 
+dskappavec = gradient(kappa(svec1),ds);
+
 
 dszeta = griddedInterpolant(svec1, [0 dszetavec(2:end)], 'spline'); 
 dszetac = griddedInterpolant(svec1, [0 dszetacvec(2:end)], 'spline'); 
 dszetanem = griddedInterpolant(svec1, [0 dszetanemvec(2:end)], 'spline'); 
 dszetacnem = griddedInterpolant(svec1, [0 dszetacnemvec(2:end)], 'spline'); 
+dskappa = griddedInterpolant(svec1, [0 dskappavec(2:end)], 'spline'); 
 
 fclose(fid);
 

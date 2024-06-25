@@ -32,7 +32,7 @@ eta = 1; % shear viscosity
 etab = 1; % bulk viscosity
 etacb = (h^2)*etab; % bulk bending viscosity
 etap = 1e-4; % pressure viscosity (for FixedPar='P')
-kappa = 1; % bending modulus
+kappa0 = 1; % bending modulus
 %xi = 0; %normal friction coefficient
 K = 500; % bulk elastic modulus
 lc = 0.1*R0; % nematic length scale in units of R0
@@ -110,7 +110,7 @@ P = P0*(1-sigmoidal(0,thalf_P,tsigma));
 
 zetasrect=0.002; %width of the sigmoidal defining the 'Rectangle' active profile
         
-[zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect);
+[kappa, dskappa, zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93, write94] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect, kappa0);
 
 %% output files:
 mkdir(dir2);

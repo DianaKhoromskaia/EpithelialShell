@@ -1,4 +1,4 @@
-function [sint, Vint, Par, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, tns, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, Lnew_dthalf, eps1new_dthalf, sfun_dthalf, snewfun_dthalf, snewvec_dthalf, SolFound] = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, K, xi, kb, x0b, kp, psi0b, optode, t, delt, Adaptive, FixedPar, P0, thalf_P, tsigma, varargin)
+function [sint, Vint, Par, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, tns, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, Lnew_dthalf, eps1new_dthalf, sfun_dthalf, snewfun_dthalf, snewvec_dthalf, SolFound] = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, K, xi, kb, x0b, kp, psi0b, optode, t, delt, Adaptive, FixedPar, P0, thalf_P, tsigma, varargin)
 SolFound = true;
 
 if t==0
@@ -37,7 +37,7 @@ end
 try
     sol = bvp4c( @ode, ...
                  @bc, ...
-                 solinit,optode, U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, K, xi, kb, x0b, kp, psi0b, FixedPar, t, P0, thalf_P, tsigma);
+                 solinit,optode, U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, K, xi, kb, x0b, kp, psi0b, FixedPar, t, P0, thalf_P, tsigma);
 catch ME
     ME
     disp(strcat('could not find solution at time t=',num2str(t)));
@@ -77,7 +77,7 @@ mss = griddedInterpolant(sint, Vint(4,:), 'spline');
 tns = griddedInterpolant(sint, Vint(5,:), 'spline');
 vs = griddedInterpolant(sint, Vint(8,:), 'spline');
 vkk = griddedInterpolant(sint, Vint(1,:)+C(sint).*Vint(2,:)+[Vint(1,1) cos(Psi(sint(2:end))).*Vint(8,2:end)./X(sint(2:end))], 'spline');
-tss = griddedInterpolant(sint, 2*K*U(sint)+zeta(sint)-zetanem(sint)-2*kappa*C(sint)*(C2(sint)-0.5*C(sint))+(etab+eta)*Vint(1,:)+(etab*C(sint)+eta*(C2(sint)-C1(sint))).*Vint(2,:)+(etab-eta)*[Vint(1,1) cos(Psi(sint(2:end))).*Vint(8,2:end)./X(sint(2:end))], 'spline');
+tss = griddedInterpolant(sint, 2*K*U(sint)+zeta(sint)-zetanem(sint)-(2*kappa*C(sint)-2*kappa*C0+zetac(sint)).*(C2(sint)-0.5*C(sint))-(kappa*C0-0.5*zetac(sint))*C(sint)+(etab+eta)*Vint(1,:)+(etab*C(sint)+eta*(C2(sint)-C1(sint))).*Vint(2,:)+(etab-eta)*[Vint(1,1) cos(Psi(sint(2:end))).*Vint(8,2:end)./X(sint(2:end))], 'spline');
 
 ds2vn = griddedInterpolant(sint, derivatives(3,:), 'spline');
 

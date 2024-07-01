@@ -5,6 +5,7 @@ function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetane
     zetacvec= zeros(size(sgrid)); 
     zetanemvec= zeros(size(sgridnem));
     zetacnemvec= zeros(size(sgridnem));
+    kappavec= zeros(size(sgridnem));
 
     for i=1:N_regions
         zeta_control=zeta_controls{i};

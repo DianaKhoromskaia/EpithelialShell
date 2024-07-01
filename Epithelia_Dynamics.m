@@ -27,17 +27,17 @@ addpath('./functions_dynamics');
 %% set physical parameters:
 R0 = 1;
 C0 = 0; % preferred curvature
-h = 1/3; % thickness of epithelium in units of R0
+h = 1/4; % thickness of epithelium in units of R0
 eta = 1; % shear viscosity
 etab = 1; % bulk viscosity
 etacb = (h^2)*etab; % bulk bending viscosity
 etap = 1e-4; % pressure viscosity (for FixedPar='P')
 kappa0 = 1; % bending modulus
 %xi = 0; %normal friction coefficient
-K = 500; % bulk elastic modulus
+K = 200; % bulk elastic modulus
 lc = 0.1*R0; % nematic length scale in units of R0
-kb = 100; % elastic constant for line tension at the open boundary
-kp = 100; % elastic constant for angle constraint at the open boundary
+kb = 200; % elastic constant for line tension at the open boundary
+kp = 200; % elastic constant for angle constraint at the open boundary
 
 Plotting = 'Off'; % set 'On' or 'Off' to save results as movies
 
@@ -169,6 +169,7 @@ filename9 = 'profile.dat';
 filename91 = 'profilec.dat';
 filename92 = 'profilenem.dat';
 filename93 = 'profilecnem.dat';
+filename94 = 'kappa.dat';
 filename10 = 'u.dat';
 filename11 = 'q.dat';
 filename12 = 'tss.dat';
@@ -189,7 +190,7 @@ fext = griddedInterpolant(svec1, fextmag*svec1, 'spline');
 %% save parameters into file
 
 T1 = table({'FixedPar';'zetasrect';'R0';'h';'eta';'etab';'etacb';'etap';'kappa';'xi';'K';'lc'},...
-        [{FixedPar};zetasrect;R0;h;eta;etab;etacb;etap;kappa;xi;K;lc],...
+        [{FixedPar};zetasrect;R0;h;eta;etab;etacb;etap;kappa0;xi;K;lc],...
         {'fixed volume (V) or free volume (P)';'width of the transition for Rectangle profiles';'radius';'thickness';'shear viscosity';'bulk viscosity';'bending viscosity';'volume viscosity';'bending modulus';'friction';'elastic modulus';'nematic length, in units of R0'},'VariableNames',{'Parameter','Value','Description'});
 writetable(T1,'parameters_physical.csv');
 
@@ -205,41 +206,41 @@ while t < tmax
     if t==0
         tic
         [svec, v, P1, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, tns, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, Lnew_dthalf, eps1new_dthalf, sfun_dthalf, snewfun_dthalf, snewvec_dthalf, SolFound] ...
-            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, K, xi, kb, x0b, kp, psi0b, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, sgrid);
+            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, kb, x0b, kp, psi0b, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, sgrid);
         tcomp = toc;
     else
         tic
         [svec, v, P1, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, tns, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, Lnew_dthalf, eps1new_dthalf, sfun_dthalf, snewfun_dthalf, snewvec_dthalf, SolFound] ...
-            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, K, xi, kb, x0b, kp, psi0b, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, solold, sfun, snewfun);
+            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, kb, x0b, kp, psi0b, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, solold, sfun, snewfun);
         tcomp = toc;
     end
     
     if SolFound
         %% evolve system with time step dt:
         if t==0
-            [C1_dt, dsC1_dt, C2_dt, C_dt, dsC_dt, X_dt, Psi_dt, Z_dt, U_dt, dsU_dt, zeta_dt, dszeta_dt, zetac_dt, dszetac_dt, zetanem_dt, dszetanem_dt, zetacnem_dt, dszetacnem_dt, xintegral_dt, solnem_dt, s0_dt, s0inv_dt, Q_dt] = ...
+            [C1_dt, dsC1_dt, C2_dt, C_dt, dsC_dt, X_dt, Psi_dt, Z_dt, U_dt, dsU_dt, kappa_dt, dskappa_dt, zeta_dt, dszeta_dt, zetac_dt, dszetac_dt, zetanem_dt, dszetanem_dt, zetacnem_dt, dszetacnem_dt, xintegral_dt, solnem_dt, s0_dt, s0inv_dt, Q_dt] = ...
                 evolvefunctions_t0(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, ...
                 vs, dsvs, vkk, vn, dsvn, mss, tns, ...
-                U, C1, dsC1, C2, C, C0, dsC, kappa, X, Psi, Z, snewfun_dt, sfun_dt, t, dt, tsigma, L, Lnew_dt, L0, eps1, eps2, etacb, npoints, dsw0, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect);
+                U, C1, dsC1, C2, C, C0, dsC, kappa, dskappa, X, Psi, Z, snewfun_dt, sfun_dt, t, dt, tsigma, L, Lnew_dt, L0, eps1, eps2, etacb, npoints, dsw0, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect, kappa0, write94);
         else
-            [C1_dt, dsC1_dt, C2_dt, C_dt, dsC_dt, X_dt, Psi_dt, Z_dt, U_dt, dsU_dt, zeta_dt, dszeta_dt, zetac_dt, dszetac_dt, zetanem_dt, dszetanem_dt, zetacnem_dt, dszetacnem_dt, xintegral_dt, solnem_dt, s0_dt, s0inv_dt, Q_dt] = ...
+            [C1_dt, dsC1_dt, C2_dt, C_dt, dsC_dt, X_dt, Psi_dt, Z_dt, U_dt, dsU_dt, kappa_dt, dskappa_dt, zeta_dt, dszeta_dt, zetac_dt, dszetac_dt, zetanem_dt, dszetanem_dt, zetacnem_dt, dszetacnem_dt, xintegral_dt, solnem_dt, s0_dt, s0inv_dt, Q_dt] = ...
                 evolvefunctions(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, ...
                 vs, dsvs, vkk, vn, dsvn, mss, tns, ...
-                U, C1, dsC1, C2, C, C0, dsC, kappa, X, Psi, Z, snewfun_dt, sfun_dt, t, dt, tsigma, L, Lnew_dt, L0, eps1, eps2, etacb, npoints, solnem, lc, s0, optode_nem, N_regions, zetasrect);
+                U, C1, dsC1, C2, C, C0, dsC, kappa, dskappa, X, Psi, Z, snewfun_dt, sfun_dt, t, dt, tsigma, L, Lnew_dt, L0, eps1, eps2, etacb, npoints, solnem, lc, s0, optode_nem, N_regions, zetasrect, kappa0, write94);
         end
         
         if strcmp(Adaptive,'On')
             %% evolve system with time step dt/2:
             if t==0
-                [C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, dsC_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, U_dthalf, dsU_dthalf, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, dszetacnem_dthalf, xintegral_dthalf, solnem_dthalf, s0_dthalf, s0inv_dthalf, Q_dthalf] = ...
+                [C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, dsC_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, U_dthalf, dsU_dthalf, kappa_dthalf, dskappa_dthalf, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, dszetacnem_dthalf, xintegral_dthalf, solnem_dthalf, s0_dthalf, s0inv_dthalf, Q_dthalf] = ...
                     evolvefunctions_t0(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, ...
                     vs, dsvs, vkk, vn, dsvn, mss, tns, ...
-                    U, C1, dsC1, C2, C, C0, dsC, kappa, X, Psi, Z, snewfun_dthalf, sfun_dthalf, t, dt/2, tsigma, L, Lnew_dthalf, L0, eps1, eps2, etacb, npoints, dsw0, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect);
+                    U, C1, dsC1, C2, C, C0, dsC, kappa, dskappa, X, Psi, Z, snewfun_dthalf, sfun_dthalf, t, dt/2, tsigma, L, Lnew_dthalf, L0, eps1, eps2, etacb, npoints, dsw0, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect, kappa0, write94);
             else
-                [C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, dsC_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, U_dthalf, dsU_dthalf, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, dszetacnem_dthalf, xintegral_dthalf, solnem_dthalf, s0_dthalf, s0inv_dthalf, Q_dthalf] = ...
+                [C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, dsC_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, U_dthalf, dsU_dthalf, kappa_dthalf, dskappa_dthalf, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, dszetacnem_dthalf, xintegral_dthalf, solnem_dthalf, s0_dthalf, s0inv_dthalf, Q_dthalf] = ...
                     evolvefunctions(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, ...
                     vs, dsvs, vkk, vn, dsvn, mss, tns, ...
-                    U, C1, dsC1, C2, C, C0, dsC, kappa, X, Psi, Z, snewfun_dthalf, sfun_dthalf, t, dt/2, tsigma, L, Lnew_dthalf, L0, eps1, eps2,etacb, npoints, solnem, lc, s0, optode_nem, N_regions, zetasrect);
+                    U, C1, dsC1, C2, C, C0, dsC, kappa, dskappa, X, Psi, Z, snewfun_dthalf, sfun_dthalf, t, dt/2, tsigma, L, Lnew_dthalf, L0, eps1, eps2,etacb, npoints, solnem, lc, s0, optode_nem, N_regions, zetasrect, kappa0, write94);
             end
             
             L_dthalf = Lnew_dthalf;
@@ -247,13 +248,13 @@ while t < tmax
             X0_dthalf = X0 + 0.5*dt*dX0;
             %% solve force balance at time t+dt/2 with step dt/2:
             [svec_dt2half, v_dt2half, P1_dt2half, sol_dt2half, vs_dt2half, dsvs_dt2half, vkk_dt2half, tss_dt2half, vn_dt2half, dsvn_dt2half, mss_dt2half, tns_dt2half, ds2vn_dt2half, dV_dt2half, dX0_dt2half, Lnew_dt2half, eps1new_dt2half, sfun_dt2half, snewfun_dt2half, snewvec_dt2half, SolFound_dt2half] ...
-                = forcebalance_dthalf(U_dthalf, dsU_dthalf, C1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, Psi_dthalf, X_dthalf, Z_dthalf, X0_dthalf, L_dthalf, L0, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, eta, etab, etacb, etap, eps1abs, xintegral_dthalf, fext, kappa, K, xi, kb, x0b, kp, psi0b, optode, t+dt/2, dt/2, FixedPar, P0, thalf_P, tsigma, sol, sfun_dthalf, snewfun_dthalf);
+                = forcebalance_dthalf(U_dthalf, dsU_dthalf, C1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, Psi_dthalf, X_dthalf, Z_dthalf, X0_dthalf, L_dthalf, L0, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, eta, etab, etacb, etap, eps1abs, xintegral_dthalf, fext, kappa_dthalf, dskappa_dthalf, K, xi, kb, x0b, kp, psi0b, optode, t+dt/2, dt/2, FixedPar, P0, thalf_P, tsigma, sol, sfun_dthalf, snewfun_dthalf);
             
             %% evolve system with time step dt/2:
             [C1_dt2half, dsC1_dt2half, C2_dt2half, C_dt2half, dsC_dt2half, X_dt2half, Psi_dt2half, Z_dt2half, U_dt2half, dsU_dt2half, zeta_dt2half, dszeta_dt2half, zetac_dt2half, dszetac_dt2half, zetanem_dt2half, dszetanem_dt2half, zetacnem_dt2half, dszetacnem_dt2half, xintegral_dt2half, solnem_dt2half, s0_dt2half, s0inv_dt2half, Q_dt2half] = ...
                 evolvefunctions(svec_dt2half, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac_dthalf, dszetac_dthalf, zetacnem_dthalf, dszetacnem_dthalf, ...
                 vs_dt2half, dsvs_dt2half, vkk_dt2half, vn_dt2half, dsvn_dt2half, mss_dt2half, tns_dt2half, ...
-                U_dthalf, C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, kappa, X_dthalf, Psi_dthalf, Z_dthalf, snewfun_dt2half, sfun_dt2half, t+dt/2, dt/2, tsigma, L_dthalf, Lnew_dt2half, L0, eps1, eps2, etacb, npoints, solnem_dthalf, lc, s0_dthalf, optode_nem, N_regions, zetasrect);
+                U_dthalf, C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, kappa_dthalf, dskappa_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, snewfun_dt2half, sfun_dt2half, t+dt/2, dt/2, tsigma, L_dthalf, Lnew_dt2half, L0, eps1, eps2, etacb, npoints, solnem_dthalf, lc, s0_dthalf, optode_nem, N_regions, zetasrect, kappa0, write94);
             
             %% compare results for adaptive time step after dt and 2*(dt/2):
             scompare = linspace(0,L,1000);
@@ -295,6 +296,8 @@ while t < tmax
             U = U_dt;
             dsU = dsU_dt;
             Q = Q_dt;
+            kappa=kappa_dt;
+            dskappa=dskappa_dt;
             zeta =zeta_dt;
             dszeta=dszeta_dt;
             zetac=zetac_dt;
@@ -338,7 +341,7 @@ while t < tmax
                 
                 %% where to evaluate
                                 
-                savetofile(X, Z, Psi, svec, snewvec_dt, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, sol.stats.nmeshpoints, v, vs, vn, tss, U, Q, s0, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, write9, write91, write92, write93, filename10, filename11, filename12, filename13, filename14, n);
+                savetofile(X, Z, Psi, svec, snewvec_dt, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, sol.stats.nmeshpoints, v, vs, vn, tss, U, Q, s0, kappa, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, filename94, write9, write91, write92, write93, write94, filename10, filename11, filename12, filename13, filename14, n);
                 
                 n = n + 1;
             end

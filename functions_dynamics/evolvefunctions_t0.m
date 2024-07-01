@@ -23,7 +23,7 @@ function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew,
     %jac = sqrt(ones(size(svec2)) + 2*dt*(vn(svec2).*C2(svec2)+dsvs(svec2)) + (dt)^2*((vn(svec2).*C2(svec2)+dsvs(svec2)).^2+(dsvn(svec2)-C2(svec2).*vs(svec2)).^2));%abs(ones(size(svec2)) + dt*(vn(svec2).*C2(svec2)+dsvs(svec2))); 
     jac = ones(size(svec2)) + dt*(vn(svec2).*C2(svec2)+dsvs(svec2)); 
     Cnew = griddedInterpolant( snew, [Cnew0 (C(svec2) + dt*( (mss(svec2)-2*kappa(svec2).*(C(svec2)-C0)-zetac(svec2)+zetacnem(svec2))/etacb) )], 'spline');
-    dsCnew = griddedInterpolant( snew, [0. (dsC(svec2) + dt*( (tns(svec2)+2*cos(Psi(svec2)).*zetacnem(svec2)./X(svec2)-2*kappa(svec2)*dsC(svec2)-2*dskappa(svec2).*(C(svec2)-C0)-dszetac(svec2)+dszetacnem(svec2))/etacb))./jac], 'spline');
+    dsCnew = griddedInterpolant( snew, [0. (dsC(svec2) + dt*( (tns(svec2)+2*cos(Psi(svec2)).*zetacnem(svec2)./X(svec2)-2*kappa(svec2).*dsC(svec2)-2*dskappa(svec2).*(C(svec2)-C0)-dszetac(svec2)+dszetacnem(svec2))/etacb))./jac], 'spline');
     
     C1new = griddedInterpolant(snew, [Cnew0/2 C1(svec2)+dt*(-dsvn(svec2).*cos(Psi(svec2))./X(svec2) -vn(svec2).*C1(svec2).*C1(svec2) + vs(svec2).*dsC1(svec2) )], 'spline');
     C2new = griddedInterpolant(snew, Cnew(snew)-C1new(snew), 'spline');

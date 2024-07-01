@@ -5,6 +5,7 @@ zetavec = zeros(size(sgrid));
 zetacvec = zeros(size(sgrid));
 zetanemvec = zeros(size(sgrid));
 zetacnemvec = zeros(size(sgrid));
+kappavec = zeros(size(sgrid));
 ds = L0/(npoints-1);
 onevec = ones(size(sgrid));
 
@@ -112,6 +113,7 @@ if write94
     kappa = griddedInterpolant(sgrid, kappavec, 'spline'); 
 else
     kappa = griddedInterpolant(sgrid, kappa0*onevec, 'spline'); 
+end
 
 
 % define dszeta(s) profile: (isotropic tension)

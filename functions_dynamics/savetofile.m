@@ -1,4 +1,4 @@
-function savetofile(X, Z, Psi, svec, svecnew, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, nmesh, v, vs, vn, tss, U, Q, s0, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, write9, write91, write92, write93, filename10, filename11, filename12, filename13, filename14, n)
+function savetofile(X, Z, Psi, svec, svecnew, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, nmesh, v, vs, vn, tss, U, Q, s0, kappa, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, filename94, write9, write91, write92, write93, write94, filename10, filename11, filename12, filename13, filename14, n)
 
         %% test for intersections:
         Xfull = X(svecnew);
@@ -50,6 +50,9 @@ function savetofile(X, Z, Psi, svec, svecnew, seval, fileID, formatSpec, t, dt, 
             if write93
                 dlmwrite(filename93, zetacnem(svecnew), 'precision', '%10.9f' ,'delimiter', '\t');
             end
+            if write94
+                dlmwrite(filename93, kappa(svecnew), 'precision', '%10.9f' ,'delimiter', '\t');
+            end
    
         else 
             dlmwrite(filename5, svec, '-append', 'precision', '%10.9f' ,'delimiter', '\t');
@@ -76,6 +79,9 @@ function savetofile(X, Z, Psi, svec, svecnew, seval, fileID, formatSpec, t, dt, 
             end
             if write93
                 dlmwrite(filename93, zetacnem(svecnew), '-append', 'precision', '%10.9f' ,'delimiter', '\t');
+            end
+            if write94
+                dlmwrite(filename94, kappa(svecnew), '-append', 'precision', '%10.9f' ,'delimiter', '\t');
             end
         end
 end

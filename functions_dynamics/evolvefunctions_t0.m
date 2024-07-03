@@ -1,4 +1,4 @@
-function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew, kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, zetacnemNew, dszetacnemNew, xintegral, solnem, s0new, s0inv, Q] = evolvefunctions_t0(svec, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, vs, dsvs, vkk, vn, dsvn, mss, tns, U, C1, dsC1, C2, C, C0, dsC, kappa, dskappa, X, Psi, Z, snewfun, sfun, t, dt, tsigma, L, Lnew, L0, eps1, eps2, etacb, npoints, dsw0, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect, kappa0, write94)
+function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew, kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, zetacnemNew, dszetacnemNew, xintegral, solnem, s0new, s0inv, Q] = evolvefunctions_t0(svec, zeta_controls, zeta_profiles, zeta_implementation_types, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac, dszetac, zetacnem, dszetacnem, vs, dsvs, vkk, vn, dsvn, mss, tns, U, C1, dsC1, C2, C, C0, dsC, kappa, dskappa, X, Psi, Z, snewfun, sfun, t, dt, tsigma, L, Lnew, L0, eps1, eps2, etacb, npoints, dsw0, lc, Q, dsQ, s0, optode_nem, N_regions, zetasrect, kappa0, write94)
 %Lagrangian update of everything:
     
     svec3 = [0. svec((svec > eps1)&(svec < (L-eps2))) L];%svec;%
@@ -51,7 +51,7 @@ function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew,
     
     Q = griddedInterpolant(sgridnem, Qnew, 'spline');
 
-    [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, zetacnemNew, dszetacnemNew] = actualiseprofiles(zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, Qnew, svec1, sgrid, sgridnem, s0new, N_regions, L0, zetasrect, t, dt, tsigma, ds, kappa0, write94);
+    [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, zetacnemNew, dszetacnemNew] = actualiseprofiles(zeta_controls, zeta_profiles, zeta_implementation_types, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, Qnew, svec1, sgrid, sgridnem, s0new, N_regions, L0, zetasrect, t, dt, tsigma, ds, kappa0, write94);
       
     xintegral = integral(@(s) Xnew(s), 0., Lnew);
 end

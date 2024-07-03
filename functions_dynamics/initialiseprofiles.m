@@ -1,4 +1,4 @@
-function [kappa, dskappa, zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93, write94] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect, kappa0)
+function [kappa, dskappa, zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_implementation_types, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93, write94] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect, kappa0)
 % initialises profiles of active contributions to tensions or moments
 
 zetavec = zeros(size(sgrid));
@@ -17,6 +17,7 @@ write94=0;
 
 zeta_controls=[];
 zeta_profiles=[];
+zeta_implementation_types=[];
 zeta_consts=[];
 zeta_las=[];
 zeta_facs=[];
@@ -40,14 +41,16 @@ while tline ~= -1
     % get the active profile parameters
     zeta_control=tline{1};
     zeta_profile=tline{2};
-    zeta_const=str2double(tline{3});
-    zeta_la=str2double(tline{4});
-    zeta_fac=str2double(tline{5});
-    zeta_sigma=str2double(tline{6});
-    zeta_thalf=str2double(tline{7});
+    zeta_implementation_type=tline{3};
+    zeta_const=str2double(tline{4});
+    zeta_la=str2double(tline{5});
+    zeta_fac=str2double(tline{6});
+    zeta_sigma=str2double(tline{7});
+    zeta_thalf=str2double(tline{8});
 
     zeta_controls=[zeta_controls, {zeta_control}];
     zeta_profiles=[zeta_profiles, {zeta_profile}];
+    zeta_implementation_types=[zeta_implementation_types, {zeta_implementation_type}];
     zeta_consts=[zeta_consts, zeta_const];
     zeta_las=[zeta_las, zeta_la];
     zeta_facs=[zeta_facs, zeta_fac];

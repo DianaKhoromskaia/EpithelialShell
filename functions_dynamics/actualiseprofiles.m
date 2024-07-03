@@ -1,4 +1,4 @@
-function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, zetacnemNew, dszetacnemNew] = actualiseprofiles(zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, Qnew, svec1, sgrid, sgridnem, s0new, N_regions, L0, zetasrect, t, dt, tsigma, ds, kappa0, write94)
+function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, zetacnemNew, dszetacnemNew] = actualiseprofiles(zeta_controls, zeta_profiles, zeta_implementation_types, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, Qnew, svec1, sgrid, sgridnem, s0new, N_regions, L0, zetasrect, t, dt, tsigma, ds, kappa0, write94)
 % update active profiles
 
     zetavec= zeros(size(sgrid));
@@ -10,6 +10,7 @@ function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetane
     for i=1:N_regions
         zeta_control=zeta_controls{i};
         zeta_profile=zeta_profiles{i};
+        zeta_implementation_type=zeta_implementation_types{i};
         zeta_const=zeta_consts(i);
         zeta_la=zeta_las(i);
         zeta_fac=zeta_facs(i);
@@ -22,23 +23,34 @@ function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetane
         else
             svec=sgridnem;
         end
+
+        % choose the profile coordinates
+
+        switch zeta_implementation_type
+            case 'Lagrangian'
+                sprofile=s0new(svec);
+                L=L0;
+            case 'Eulerian'
+                sprofile=svec;
+                L=svec(end);
+        end
         
         % calculate zeta profile of the considered region
         switch zeta_profile
             case 'Gaussian'
-                zeta = (1-sigmoidal(t+dt,zeta_thalf,tsigma))*superGaussian(s0new(svec), zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, 1);
+                zeta = (1-sigmoidal(t+dt,zeta_thalf,tsigma))*superGaussian(sprofile, zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, 1);
             case 'Sigmoidal'
                 if zeta_la==1
                     zeta = (1-sigmoidal(t+dt,zeta_thalf,tsigma))*zeta_const*ones(size(svec));
                 else
-                    zeta = (1-sigmoidal(t+dt,zeta_thalf,tsigma))*(zeta_const*ones(size(svec))+zeta_fac*sigmoidal(s0new(svec), zeta_la*L0, zeta_sigma*L0));
+                    zeta = (1-sigmoidal(t+dt,zeta_thalf,tsigma))*(zeta_const*ones(size(svec))+zeta_fac*sigmoidal(sprofile, zeta_la*L, zeta_sigma*L));
                 end
             case 'Rectangle'
-                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*rect(s0new(svec),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
+                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*rect(sprofile,zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, zetasrect*L);
             case 'Linear'
-                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*linear(s0new(svec),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
+                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*linear(sprofile,zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, zetasrect*L);
             case 'Exponential'
-                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*(zeta_const*ones(size(svec))+zeta_fac*exponential(s0new(svec),zeta_la*L0,zeta_sigma*L0));
+                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*(zeta_const*ones(size(svec))+zeta_fac*exponential(sprofile,zeta_la*L,zeta_sigma*L));
         end
         
         % add to the global profile

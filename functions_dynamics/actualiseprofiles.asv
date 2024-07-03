@@ -1,14 +1,16 @@
-function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, zetacnemNew, dszetacnemNew] = actualiseprofiles(zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, Qnew, svec1, sgrid, sgridnem, s0new, N_regions, L0, zetasrect, t, dt, tsigma, ds)
+function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetanemNew, dszetanemNew, zetacnemNew, dszetacnemNew] = actualiseprofiles(zeta_controls, zeta_profiles, zeta_implementation_types, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, Qnew, svec1, sgrid, sgridnem, s0new, N_regions, L0, zetasrect, t, dt, tsigma, ds, kappa0, write94)
 % update active profiles
 
     zetavec= zeros(size(sgrid));
     zetacvec= zeros(size(sgrid)); 
     zetanemvec= zeros(size(sgridnem));
     zetacnemvec= zeros(size(sgridnem));
+    kappavec= zeros(size(sgridnem));
 
     for i=1:N_regions
         zeta_control=zeta_controls{i};
         zeta_profile=zeta_profiles{i};
+        zeta_implementation_type=zeta_implementation_types{i};
         zeta_const=zeta_consts(i);
         zeta_la=zeta_las(i);
         zeta_fac=zeta_facs(i);
@@ -21,6 +23,12 @@ function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetane
         else
             svec=sgridnem;
         end
+
+        switch zeta_implementation_type
+            case 'Lagrangian'
+                sprofile=s0new(svec);
+            case 'Eulerian'
+                sprofile=svec;
         
         % calculate zeta profile of the considered region
         switch zeta_profile
@@ -63,6 +71,7 @@ function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetane
         kappaNew = griddedInterpolant(sgrid, kappavec, 'spline'); 
     else
         kappaNew = griddedInterpolant(sgrid, kappa0*ones(size(sgrid)), 'spline');
+    end
           
     % profile gradients:
     dszetavec = gradient(zetaNew(svec1),ds); 
@@ -71,8 +80,9 @@ function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetane
     dszetacnemvec = gradient(zetacnemNew(svec1),ds);
     dskappavec = gradient(kappaNew(svec1),ds);
     
-    dszetaNew = griddedInterpolant(svec1, [0 dszetavec(2:end-1) 0], 'spline');
-    dszetacNew = griddedInterpolant(svec1, [0 dszetacvec(2:end-1) 0], 'spline'); 
-    dszetanemNew = griddedInterpolant(svec1, [0 dszetanemvec(2:end-1) 0], 'spline'); 
-    dszetacnemNew = griddedInterpolant(svec1, [0 dszetacnemvec(2:end-1) 0], 'spline'); 
+    dszetaNew = griddedInterpolant(svec1, [0 dszetavec(2:end)], 'spline');
+    dszetacNew = griddedInterpolant(svec1, [0 dszetacvec(2:end)], 'spline'); 
+    dszetanemNew = griddedInterpolant(svec1, [0 dszetanemvec(2:end)], 'spline'); 
+    dszetacnemNew = griddedInterpolant(svec1, [0 dszetacnemvec(2:end)], 'spline');
+    dskappaNew = griddedInterpolant(svec1, [0 dskappavec(2:end)], 'spline');
 end

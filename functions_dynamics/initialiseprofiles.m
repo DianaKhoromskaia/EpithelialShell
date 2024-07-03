@@ -63,22 +63,28 @@ while tline ~= -1
         dir2=strcat(dir2,'_',zeta_control,'_',zeta_profile,'_la=',num2str(zeta_la),'_fac=',num2str(zeta_fac),'_sigma=',num2str(zeta_sigma),'_thalf=',num2str(zeta_thalf));
     end
 
+    if zeta_thalf == 0
+        prefac_t=1;
+    else
+        prefac_t=(1-sigmoidal(t,zeta_thalf,tsigma));
+    end
+
     % define zeta profile of the considered region
     switch zeta_profile
         case 'Gaussian'
-                zeta = (1-sigmoidal(t,zeta_thalf,tsigma))*superGaussian(s0(sgrid), zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, 1);
+                zeta = prefac_t*superGaussian(s0(sgrid), zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, 1);
         case 'Sigmoidal'
             if zeta_la==1
-                zeta = (1-sigmoidal(t,zeta_thalf,tsigma))*zeta_const*onevec;  
+                zeta = prefac_t*zeta_const*onevec;  
             else
-                zeta = (1-sigmoidal(t,zeta_thalf,tsigma))*(zeta_const*onevec+zeta_fac*sigmoidal(s0(sgrid), zeta_la*L0, zeta_sigma*L0)); 
+                zeta = prefac_t*(zeta_const*onevec+zeta_fac*sigmoidal(s0(sgrid), zeta_la*L0, zeta_sigma*L0)); 
             end
         case 'Rectangle'
-                zeta=(1-sigmoidal(t,zeta_thalf,tsigma))*rect(s0(sgrid),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
+                zeta=prefac_t*rect(s0(sgrid),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
         case 'Linear'
-                zeta=(1-sigmoidal(t,zeta_thalf,tsigma))*linear(s0(sgrid),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
+                zeta=prefac_t*linear(s0(sgrid),zeta_la*L0, zeta_fac, zeta_const, zeta_sigma*L0, zetasrect*L0);
         case 'Exponential'
-                zeta=(1-sigmoidal(t,zeta_thalf,tsigma))*(zeta_const*onevec+zeta_fac*exponential(s0(sgrid),zeta_la*L0,zeta_sigma*L0));
+                zeta=prefac_t*(zeta_const*onevec+zeta_fac*exponential(s0(sgrid),zeta_la*L0,zeta_sigma*L0));
     end
 
     % add to the global profile
@@ -96,7 +102,7 @@ while tline ~= -1
             zetacnemvec = zetacnemvec+zeta;
             write93=1;
         case 'BendingModulus'
-            kappavec = kappavec+zeta;
+            kappavec = kappavec+zeta
             write94=1;
     end
 

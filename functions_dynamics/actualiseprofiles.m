@@ -34,23 +34,29 @@ function [kappaNew, dskappaNew, zetaNew, dszetaNew, zetacNew, dszetacNew, zetane
                 sprofile=svec;
                 L=svec(end);
         end
+
+        if zeta_thalf == 0
+            prefac_t=1;
+        else
+            prefac_t=(1-sigmoidal(t,zeta_thalf,tsigma));
+        end
         
         % calculate zeta profile of the considered region
         switch zeta_profile
             case 'Gaussian'
-                zeta = (1-sigmoidal(t+dt,zeta_thalf,tsigma))*superGaussian(sprofile, zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, 1);
+                zeta = prefac_t*superGaussian(sprofile, zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, 1);
             case 'Sigmoidal'
                 if zeta_la==1
-                    zeta = (1-sigmoidal(t+dt,zeta_thalf,tsigma))*zeta_const*ones(size(svec));
+                    zeta = prefac_t*zeta_const*ones(size(svec));
                 else
-                    zeta = (1-sigmoidal(t+dt,zeta_thalf,tsigma))*(zeta_const*ones(size(svec))+zeta_fac*sigmoidal(sprofile, zeta_la*L, zeta_sigma*L));
+                    zeta = prefac_t*(zeta_const*ones(size(svec))+zeta_fac*sigmoidal(sprofile, zeta_la*L, zeta_sigma*L));
                 end
             case 'Rectangle'
-                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*rect(sprofile,zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, zetasrect*L);
+                zeta=prefac_t*rect(sprofile,zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, zetasrect*L);
             case 'Linear'
-                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*linear(sprofile,zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, zetasrect*L);
+                zeta=prefac_t*linear(sprofile,zeta_la*L, zeta_fac, zeta_const, zeta_sigma*L, zetasrect*L);
             case 'Exponential'
-                zeta=(1-sigmoidal(t+dt,zeta_thalf,tsigma))*(zeta_const*ones(size(svec))+zeta_fac*exponential(sprofile,zeta_la*L,zeta_sigma*L));
+                zeta=prefac_t*(zeta_const*ones(size(svec))+zeta_fac*exponential(sprofile,zeta_la*L,zeta_sigma*L));
         end
         
         % add to the global profile

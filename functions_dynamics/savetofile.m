@@ -51,7 +51,7 @@ function savetofile(X, Z, Psi, svec, svecnew, seval, fileID, formatSpec, t, dt, 
                 dlmwrite(filename93, zetacnem(svecnew), 'precision', '%10.9f' ,'delimiter', '\t');
             end
             if write94
-                dlmwrite(filename93, kappa(svecnew), 'precision', '%10.9f' ,'delimiter', '\t');
+                dlmwrite(filename94, kappa(svecnew), 'precision', '%10.9f' ,'delimiter', '\t');
             end
    
         else 

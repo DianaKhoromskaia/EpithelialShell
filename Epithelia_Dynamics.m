@@ -251,7 +251,7 @@ while t < tmax
                 = forcebalance_dthalf(U_dthalf, dsU_dthalf, C1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, Psi_dthalf, X_dthalf, Z_dthalf, X0_dthalf, L_dthalf, L0, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, eta, etab, etacb, etap, eps1abs, xintegral_dthalf, fext, kappa_dthalf, dskappa_dthalf, K, xi, kb, x0b, kp, psi0b, optode, t+dt/2, dt/2, FixedPar, P0, thalf_P, tsigma, sol, sfun_dthalf, snewfun_dthalf);
             
             %% evolve system with time step dt/2:
-            [C1_dt2half, dsC1_dt2half, C2_dt2half, C_dt2half, dsC_dt2half, X_dt2half, Psi_dt2half, Z_dt2half, U_dt2half, dsU_dt2half, zeta_dt2half, dszeta_dt2half, zetac_dt2half, dszetac_dt2half, zetanem_dt2half, dszetanem_dt2half, zetacnem_dt2half, dszetacnem_dt2half, xintegral_dt2half, solnem_dt2half, s0_dt2half, s0inv_dt2half, Q_dt2half] = ...
+            [C1_dt2half, dsC1_dt2half, C2_dt2half, C_dt2half, dsC_dt2half, X_dt2half, Psi_dt2half, Z_dt2half, U_dt2half, dsU_dt2half, kappa_dt2half, dskappa_dt2half, zeta_dt2half, dszeta_dt2half, zetac_dt2half, dszetac_dt2half, zetanem_dt2half, dszetanem_dt2half, zetacnem_dt2half, dszetacnem_dt2half, xintegral_dt2half, solnem_dt2half, s0_dt2half, s0inv_dt2half, Q_dt2half] = ...
                 evolvefunctions(svec_dt2half, zeta_controls, zeta_profiles, zeta_consts, zeta_las, zeta_sigmas, zeta_facs, zeta_thalfs, zetac_dthalf, dszetac_dthalf, zetacnem_dthalf, dszetacnem_dthalf, ...
                 vs_dt2half, dsvs_dt2half, vkk_dt2half, vn_dt2half, dsvn_dt2half, mss_dt2half, tns_dt2half, ...
                 U_dthalf, C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, kappa_dthalf, dskappa_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, snewfun_dt2half, sfun_dt2half, t+dt/2, dt/2, tsigma, L_dthalf, Lnew_dt2half, L0, eps1, eps2, etacb, npoints, solnem_dthalf, lc, s0_dthalf, optode_nem, N_regions, zetasrect, kappa0, write94);
@@ -362,7 +362,7 @@ while t < tmax
         
         %% where to evaluate
                 
-        savetofile(X, Z, Psi, svec, snewvec_dt, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, sol.stats.nmeshpoints, v, vs, vn, tss, U, Q, s0, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, write9, write91, write92, write93, filename10, filename11, filename12, filename13, filename14, n);
+        savetofile(X, Z, Psi, svec, snewvec_dt, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, sol.stats.nmeshpoints, v, vs, vn, tss, U, Q, s0, kappa, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, filename94, write9, write91, write92, write93, write94, filename10, filename11, filename12, filename13, filename14, n);
         
         disp('Steady state reached.')
         break;

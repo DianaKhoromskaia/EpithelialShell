@@ -102,7 +102,7 @@ while tline ~= -1
             zetacnemvec = zetacnemvec+zeta;
             write93=1;
         case 'BendingModulus'
-            kappavec = kappavec+zeta
+            kappavec = kappavec+zeta;
             write94=1;
     end
 

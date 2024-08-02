@@ -3,64 +3,33 @@
 % Code for the Publication "Active morphogenesis of patterned epithelial shells"
 
 % authors: Diana Khoromskaia, Nicolas Cuny and Guillaume Salbreux
-% date last edited: 14/02/2023
+% date last edited: 02/08/2024
 
-function Epithelia_Dynamics(l_open, dt, tmax, FixedPar, ProfileFile, dtmax, Adaptive, xi, tol, P0, thalf_P)
+function Epithelia_Dynamics(dirname, ParametersFile, ProfileFile)
 % arguments are:
-% l_open - value of la at which is situated the free boundary (has to be between 0 and 1)
-% dt - initial time step
-% tmax - end time
-% FixedPar - set to 'V' or 'P' for fixed or free volume, respectively
-% ProfileFile - a string with the name of a file containing N lines of the
-% form [ControlPar, ProfileType, param_const, param_la, param_fac, param_sigma, thalf],
-% each line corresponds to one active region with:
-% ControlPar : control parameter/ active effect: 'Tension', 'Bending', 'Nematic, 'BendingNematic'
-% ProfileType : 'Sigmoidal', 'Gaussian', 'Rectangle' or 'Linear'
-% param_const, param_la, param_fac, param_sigma, thalf : parameters defining the active profile in the region
-% dtmax - maximal time step
-% Adaptive - 'On' or 'Off'
-% xi - normal friction coefficient; set to 0, not required. 
-% tol - relative tolerance on adaptive time step
+% dirname - name of the directory where output files are going to be saved,
+% if 0 the program build itself the name
+% ParametersFile : input file for parameters of the simulation
+% ProfileFile : input file for active profiles
 
 addpath('./functions_dynamics');
 
 %% set physical parameters:
-R0 = 1;
-C0 = 0; % preferred curvature
-h = 1/4; % thickness of epithelium in units of R0
-eta = 1; % shear viscosity
-etab = 1; % bulk viscosity
-etacb = (h^2)*etab; % bulk bending viscosity
-etap = 1e-4; % pressure viscosity (for FixedPar='P')
-kappa0 = 1; % bending modulus
-%xi = 0; %normal friction coefficient
-K = 200; % bulk elastic modulus
-lc = 0.1*R0; % nematic length scale in units of R0
-kb = 200; % elastic constant for line tension at the open boundary
-kp = 200; % elastic constant for angle constraint at the open boundary
+fid=fopen(ParametersFile);
+tline=fgetl(fid);
+
+while tline ~= -1
+    eval(tline);
+    tline=fgetl(fid);
+end
+
+fclose(fid);
 
 Plotting = 'Off'; % set 'On' or 'Off' to save results as movies
 
-%% set numerical parameters:
-%cut-off for nematic equations at SP and at NP of the surface in units of interval length:
-eps1abs = 1e-4;% 1e-4;
-eps2abs = 1e-4;%1e-2;
-%relative and absolute error bounds for bvp-solver:
-epsoderel = 1e-4;
-epsodeabs = 1e-6;
-%options for bvp-solvers: -- set 'stats' to 'off' if details of solver output not required
+%% options for bvp-solvers: -- set 'stats' to 'off' if details of solver output not required
 optode = bvpset('RelTol', epsoderel, 'AbsTol', epsodeabs, 'stats','on','Vectorized', 'on','FJacobian',@fjac,'BCJacobian',@bcjac,'NMax', 1e+5); %'FJacobian',@fjac,'BCJacobian',@bcjac, 
 optode_nem = bvpset('RelTol', 1e-4, 'AbsTol', 1e-6, 'stats','on','Vectorized', 'on','FJacobian',@fjac_nematic,'BCJacobian',@bcjac_nematic,'NMax', 1e+5);
-
-%tol = 1e-5; %relative tolerance for time step
-
-% set time parameters
-t = 0;
-tsigma = 0.002;
-
-%% sizes of different grids
-nplot = 1e+3;       % for plotting and saving to file
-npoints = 1e+6;     % for initialising functions on sphere, and for derivatives
 
 %% initialise spherical shape on half of s-interval
 z0 = 0.; %offset in z-direction
@@ -71,8 +40,6 @@ eps1 = eps1abs*L;
 eps2 = eps2abs*L;
 V0 = (4/3)*pi*R0^3*(2+cos(pi*l_open))*sin(pi*l_open/2)^4;
 V = V0;
-x0b=R0*sin(pi*l_open); % reference x of the open boundary
-psi0b=pi*l_open; % preferred angle at the open boundary
 
 sgrid = linspace(0,L0,300);
 
@@ -81,10 +48,10 @@ sinit = svec1;
 Xinit = X;
 Zinit = Z;
 
-figure(1)
-plot(X(svec1),Z(svec1))
-axis('equal')
-axis([0, 2*R0, 0, 2*R0])
+% figure(1)
+% plot(X(svec1),Z(svec1))
+% axis('equal')
+% axis([0, 2*R0, 0, 2*R0])
 
 %% initialise pressure and output directory, depending on FixedPar
 
@@ -113,24 +80,30 @@ zetasrect=0.002; %width of the sigmoidal defining the 'Rectangle' active profile
 [kappa, dskappa, zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_implementation_types, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93, write94] = initialiseprofiles(ProfileFile, sgrid, svec1, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect, kappa0);
 
 %% output files:
+
+if dirname
+    dir2=dirname
+end
+
 mkdir(dir2);
+copyfile(ParametersFile,strcat(dir2,'/parameters.dat'));
 copyfile(ProfileFile,strcat(dir2,'/profiles_file.dat'));
 cd(dir2);
 
 % plot profiles to check:
-figure(2)
-subplot(2,2,1)
-plot(svec1, zeta(svec1), svec1, dszeta(svec1));
-legend('\zeta','\partial_s\zeta');
-subplot(2,2,2)
-plot(svec1, zetac(svec1), svec1, dszetac(svec1));
-legend('\zeta_c','\partial_s\zeta_c');
-subplot(2,2,3)
-plot(svec1, zetanem(svec1), svec1, dszetanem(svec1));
-legend('\zeta_{n}','\partial_s\zeta_{n}');
-subplot(2,2,4)
-plot(svec1, zetacnem(svec1), svec1, dszetacnem(svec1));
-legend('\zeta_{cn}','\partial_s\zeta_{cn}');
+% figure(2)
+% subplot(2,2,1)
+% plot(svec1, zeta(svec1), svec1, dszeta(svec1));
+% legend('\zeta','\partial_s\zeta');
+% subplot(2,2,2)
+% plot(svec1, zetac(svec1), svec1, dszetac(svec1));
+% legend('\zeta_c','\partial_s\zeta_c');
+% subplot(2,2,3)
+% plot(svec1, zetanem(svec1), svec1, dszetanem(svec1));
+% legend('\zeta_{n}','\partial_s\zeta_{n}');
+% subplot(2,2,4)
+% plot(svec1, zetacnem(svec1), svec1, dszetacnem(svec1));
+% legend('\zeta_{cn}','\partial_s\zeta_{cn}');
 
 %saveas(figure(1),'activeprofiles.fig');
 %saveas(figure(1),'activeprofiles.png');
@@ -147,6 +120,7 @@ svecuni = linspace(0., L, nplot);%uniform grid for saving
 
 % save functions of initial shape:
 filename2 = 'curvatures.dat';
+dlmwrite('steadystate.dat',0);
 dlmwrite(filename2, svecuni, 'precision', '%10.9f' ,'delimiter', '\t');
 dlmwrite(filename2, C1(svecuni), '-append','precision', '%10.9f' ,'delimiter', '\t');
 dlmwrite(filename2, C2(svecuni), '-append','precision', '%10.9f' ,'delimiter', '\t');
@@ -365,6 +339,7 @@ while t < tmax
         savetofile(X, Z, Psi, svec, snewvec_dt, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, sol.stats.nmeshpoints, v, vs, vn, tss, U, Q, s0, kappa, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, filename94, write9, write91, write92, write93, write94, filename10, filename11, filename12, filename13, filename14, n);
         
         disp('Steady state reached.')
+        dlmwrite('steadystate.dat',1);
         break;
     end
 end

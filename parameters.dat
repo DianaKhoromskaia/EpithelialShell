@@ -1,0 +1,47 @@
+%% Numerical parameters
+dt=0.0001; % initial time step
+tmax=5; % end time
+FixedPar = 'P'; % set to 'V' or 'P' for fixed or free volume, respectively
+dtmax = 0.001; % maximal time step
+Adaptive = 'On'; % adaptive time step option
+tol = 0.001; % relative tolerance on adaptive time step
+%
+%%cut-off for nematic equations at SP and at NP of the surface in units of interval length:
+%
+eps1abs = 1e-4;
+eps2abs = 1e-4;
+%
+%relative and absolute error bounds for bvp-solver:
+%
+epsoderel = 1e-4;
+epsodeabs = 1e-6;
+%
+% set time parameters
+t = 0;
+tsigma = 0.002;
+%
+%% sizes of different grids
+nplot = 1e+3;       % for plotting and saving to file
+npoints = 1e+6;     % for initialising functions on sphere, and for derivatives
+%
+%% Physical parameters
+l_open = 0.7; % position of the opening
+R0 = 1;
+C0=0; % preferred curvature
+h = 1/4; % thickness of epithelium in units of R0
+eta = 1; % shear viscosity
+etab = 1; % bulk viscosity
+etacb = (h^2)*etab; % bulk bending viscosity
+etap = 1e-4; % pressure viscosity (for FixedPar='P')
+kappa0 = 1; % bending modulus
+%xi = 0; %normal friction coefficient
+K = 200; % bulk elastic modulus
+lc = 0.1*R0; % nematic length scale in units of R0
+P0 = 0; % value of the pressure inside the shape
+thalf_P = 0; %half-time of pressure application
+xi = 0; % normal friction coefficient
+zetasrect=0.002; %width of the sigmoidal defining the 'Rectangle' active profile
+x0b=0.5*R0; % reference x of the open boundary
+psi0b=pi; % preferred angle at the open boundary
+kb = 200; % radius opening elasticity constant
+kp = 200; % angle opening elasticity constant

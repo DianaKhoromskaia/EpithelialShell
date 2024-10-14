@@ -76,7 +76,7 @@ dvds = [ds2vs;
             zervec;
             0.5*(-vn(indices).*(C1(L).^ 2 + C2(L).^2) - (mss(indices)-2*kappa(L)*(C(L)-C0)- zetac(L))/etacb);
             tns(indices);
-            -0.5*P*onevec+C2(L).*(2*K*U(L) + zeta(L) - zetanem(L) - (2*kappa(L)*(C(L)- C0) + zetac(L))*(C2(L)-0.5*C(L)) + (-kappa(L)*C0 + 0.5*zetac(L))*(C(L)-C0+0.5*zetac(L)/kappa(L)) + (eta+etab)*dsvs(indices) + etab*C(L)*vn(indices))+0.5*xi*vn(indices)+0.5*fc*onevec
+            -0.5*P*onevec+C2(L).*(2*K*U(L) + zeta(L) - zetanem(L) - (2*kappa(L)*(C(L)- C0) + zetac(L))*(C2(L)-0.5*C(L)) + (-kappa(L)*C0 + 0.5*zetac(L))*(C(L)-C0+0.5*zetac(L)/kappa(L)) + (eta+etab)*dsvs(indices) + etab*C(L)*vn(indices))+0.5*xi*vn(indices)+0.5*fc*onevec;
             zervec;
             zervec;
             dsvs(indices);%0.5*((tss(indices) - 2*K*U(L) - zeta(L))/etab - C(L).*vn(indices));

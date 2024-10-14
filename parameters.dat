@@ -4,7 +4,7 @@ tmax=5; % end time
 FixedPar = 'P'; % set to 'V' or 'P' for fixed or free volume, respectively
 dtmax = 0.001; % maximal time step
 Adaptive = 'On'; % adaptive time step option
-tol = 0.001; % relative tolerance on adaptive time step
+tol = 0.0001; % relative tolerance on adaptive time step
 %
 %%cut-off for nematic equations at SP and at NP of the surface in units of interval length:
 %
@@ -30,7 +30,7 @@ C0=0; % preferred curvature
 h = 1/4; % thickness of epithelium in units of R0
 eta = 1; % shear viscosity
 etab = 1; % bulk viscosity
-etacb = (h^2)*etab; % bulk bending viscosity
+etacb = 1; % bulk bending viscosity
 etap = 1e-4; % pressure viscosity (for FixedPar='P')
 kappa0 = 1; % bending modulus
 %xi = 0; %normal friction coefficient

@@ -12,6 +12,8 @@ function Epithelia_Dynamics(dirname, ParametersFile, ProfileFile)
 % ParametersFile : input file for parameters of the simulation
 % ProfileFile : input file for active profiles
 
+dirname
+
 addpath('./functions_dynamics');
 
 %% set physical parameters:
@@ -330,10 +332,10 @@ while t < tmax
         
         %% where to evaluate
                 
-        savetofile(X, Z, Psi, svec, snewvec_dt, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, sol.stats.nmeshpoints, v, vs, vn, tss, U, Q, s0, kappa, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, write9, write91, write92, write93, filename10, filename11, filename12, filename13, filename14, n);
-        
+        savetofile(X, Z, Psi, svec, snewvec_dt, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, sol.stats.nmeshpoints, v, vs, vn, tss, U, Q, s0, kappa, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, filename94, write9, write91, write92, write93, write94, filename10, filename11, filename12, filename13, filename14, n);
+
         disp('Steady state reached.')
-        dlmwrite('steadystate.dat',0)
+        dlmwrite('steadystate.dat',1)
         break;
     end
 end

@@ -12,8 +12,6 @@ function Epithelia_Dynamics(dirname, ParametersFile, ProfileFile)
 % ParametersFile : input file for parameters of the simulation
 % ProfileFile : input file for active profiles
 
-dirname
-
 addpath('./functions_dynamics');
 
 %% set physical parameters:
@@ -78,7 +76,7 @@ P = P0*(1-sigmoidal(0,thalf_P,tsigma));
 
 %% output files:
 if dirname
-    dir2=dirname;
+    dir2=dirname
 end
 
 mkdir(dir2);

@@ -45,9 +45,14 @@ function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew,
     parguess = solnem_old.parameters;
     solinit_nem = bvpinit(sgrid_nem, @yguessfun_nematic, parguess, sfun, solnem_old);
     
-    solnem = bvp4c( @ode_nematic, ...
+    try
+        solnem = bvp4c( @ode_nematic, ...
         @bc_nematic, ...
         solinit_nem, optode_nem, Psinew, Xnew, Lnew, lc);
+    catch ME
+        ME
+        disp(strcat('could not find solution for nematic field at time t=',num2str(t)));
+    end
     solnem_sgrid = deval(solnem,sgrid);
     Qnew = solnem_sgrid(1,:);
     

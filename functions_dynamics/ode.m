@@ -56,27 +56,28 @@ dvds = [ds2vs;
         zervec = zeros(size(s(indices)));
         onevec = ones(size(s(indices)));
         
-        dvds(:,indices) =   [(-dszeta(0) + dszetac(0)*C2(0) + 2*dskappa(0)*C0)/(eta+etab);%-C2(0).*tns(indices);%zervec;
+        dvds(:,indices) =   [(-dszeta(0) + 2*dszetac(0)*C2(0) + 2*dskappa(0)*C0)/(eta+etab);%-C2(0).*tns(indices);%zervec;
             zervec;
             0.5*(-vn(indices).*(C1(0).^2 + C2(0).^2) - (mss(indices) - 2*kappa(0)*(C(0)-C0) - zetac(0))/etacb);
             tns(indices);
-             -0.5*P*onevec+C2(0).*(2*K*U(0) + zeta(0) - zetanem(0) - (2*kappa(0)*(C(0)- C0) + zetac(0))*(C2(0)-0.5*C(0)) + (-kappa(0)*C0 + 0.5*zetac(0))*(C(0)-C0+0.5*zetac(0)/kappa(0)) + (eta+etab)*dsvs(indices) + etab*C(0)*vn(indices))+0.5*xi*vn(indices)+0.5*fc*onevec;%-0.5*P*onevec+C2(0).*tss(indices)+0.5*xi*vn(indices)+0.5*fc*onevec;
+            -0.5*P*onevec+C2(0).*(2*K*U(0) + zeta(0) - zetanem(0) - (2*kappa(0)*(C(0)- C0) + zetac(0))*(C2(0)-0.5*C(0)) + (-kappa(0)*C0 + 0.5*zetac(0))*(C(0)-C0+0.5*zetac(0)/kappa(0)) + 2*etab*dsvs(indices) + etab*C(0)*vn(indices))+0.5*xi*vn(indices)+0.5*fc*onevec;%-0.5*P*onevec+C2(0).*tss(indices)+0.5*xi*vn(indices)+0.5*fc*onevec;
             zervec;
             zervec;
             dsvs(indices);%0.5*((tss(indices) - 2*K*U(0) - zeta(0))/etab - C(0).*vn(indices));
             dsvs(indices) + C2(0).*vn(indices);%sqrt(onevec+2*dt*(dsvs(indices) + C2(0).*vn(indices))+(dt^2)*((dsvs(indices) + C2(0).*vn(indices)).^2+(dsvn(indices)-C2(0).*vs(indices)).^2));%sqrt(onevec+dt*(tss(indices) - 2*K*U(0) - zeta(0))/etab+(dt^2)*(tss(indices) - 2*K*U(0) - zeta(0)).^2/(4*etab^2));%(0.5*((tss(indices) - 2*K*U(0) - zeta(0))/etab - C(0).*vn(indices))) + C2(0)*vn(indices);
             zervec];
 
+
  % specify force balance at NP:       
         indices = find(~(s-L));
         zervec = zeros(size(s(indices)));
         onevec = ones(size(s(indices)));
         
-        dvds(:,indices) =   [(-dszeta(L) + dszetac(L)*C2(L) + 2*dskappa(L)*C0)/(eta+etab);%-C2(L).*tns(indices);%zervec;%
+        dvds(:,indices) =   [(-dszeta(L) + 2*dszetac(L)*C2(L) + 2*dskappa(L)*C0)/(eta+etab);%-C2(L).*tns(indices);%zervec;%
             zervec;
             0.5*(-vn(indices).*(C1(L).^ 2 + C2(L).^2) - (mss(indices)-2*kappa(L)*(C(L)-C0)- zetac(L))/etacb);
             tns(indices);
-            -0.5*P*onevec+C2(L).*(2*K*U(L) + zeta(L) - zetanem(L) - (2*kappa(L)*(C(L)- C0) + zetac(L))*(C2(L)-0.5*C(L)) + (-kappa(L)*C0 + 0.5*zetac(L))*(C(L)-C0+0.5*zetac(L)/kappa(L)) + (eta+etab)*dsvs(indices) + etab*C(L)*vn(indices))+0.5*xi*vn(indices)-0.5*fc*onevec;
+            -0.5*P*onevec+C2(L).*(2*K*U(L) + zeta(L) - zetanem(L) - (2*kappa(L)*(C(L)- C0) + zetac(L))*(C2(L)-0.5*C(L)) + (-kappa(L)*C0 + 0.5*zetac(L))*(C(L)-C0+0.5*zetac(L)/kappa(L)) + 2*etab*dsvs(indices) + etab*C(L)*vn(indices))+0.5*xi*vn(indices)-0.5*fc*onevec;
             zervec;
             zervec;
             dsvs(indices);%0.5*((tss(indices) - 2*K*U(L) - zeta(L))/etab - C(L).*vn(indices));

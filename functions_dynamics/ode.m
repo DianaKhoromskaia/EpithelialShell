@@ -35,8 +35,8 @@ onevec = ones(size(s));
 
 ds2vn = -cos(Psi(s)).*dsvn./X(s) - vn.*(C1(s).^2 + C2(s).^2) + vs.*dsC(s) - (mss - 2*kappa(s).*(C(s)-C0) - zetac(s) + zetacnem(s))/etacb;
 
-tss = 2*K*U(s) + zeta(s) - zetanem(s) -(kappa(s).*(C(s)-C0)+zc0_on*0.5*zetac(s)).*(C2(s)-C1(s)) + zc0_on*(0.5*zetac(s)-C0*kappa(s)).*(C(s)-C0+0.5*zetac(s)./kappa(s)) + (eta+etab)*dsvs + (etab-eta)*cos(Psi(s)).*vs./X(s) + (etab*C(s)+eta*(C2(s)-C1(s))).*vn;
-dstns = 2*C1(s).*(T+V-(kappa(s).*(C(s)-C0)+0.5*zetac(s)).*(C1(s)-C2(s))) + C(s).*tss - cos(Psi(s)).*tns./X(s) - P + cos(Psi(s)).*fc  - fextn;
+tss = 2*K*U(s) + zeta(s) - zetanem(s) -(kappa(s).*(C(s)-C0)+zc0_on*0.5*zetac(s)).*(C2(s)-C1(s)) + (zc0_on*0.5*zetac(s)-C0*kappa(s)).*(C(s)-C0+zc0_on*0.5*zetac(s)./kappa(s)) + (eta+etab)*dsvs + (etab-eta)*cos(Psi(s)).*vs./X(s) + (etab*C(s)+eta*(C2(s)-C1(s))).*vn;
+dstns = 2*C1(s).*(T+V+(kappa(s).*(C(s)-C0)+zc0_on*0.5*zetac(s)).*(C2(s)-C1(s))) + C(s).*tss - cos(Psi(s)).*tns./X(s) - P + cos(Psi(s)).*fc  - fextn;
 dsmss = tns + 2*cos(Psi(s)).*zetacnem(s)./X(s);
 
 ds2vs = -cos(Psi(s)).*(dsvs-cos(Psi(s)).*vs./X(s))./X(s) - (eta-etab)*C1(s).*C2(s).*vs/(eta+etab) - dsC(s).*vn - (etab*C(s)+eta*(C2(s)-C1(s))).*dsvn/(eta+etab) - (2*K*dsU(s)+dszeta(s))/(eta+etab)  + (dszetanem(s) + 2*cos(Psi(s)).*zetanem(s)./X(s))/(eta+etab) - C2(s).*tns./(eta+etab) - sin(Psi(s)).*fc/(eta+etab) + (dskappa(s).*C(s).*(C2(s)-C1(s)) + 2*C2(s).*kappa(s).*dsC(s)+ zc0_on*C1(s).*dszetac(s) + (zc0_on*0.5*zetac(s)/kappa(s)-C0).*(zc0_on*dszetac(s)+(C0-zc0_on*0.5*zetac(s)/kappa(s)).*dskappa(s)/kappa(s)))./(eta+etab);
@@ -63,7 +63,7 @@ dvds = [ds2vs;
             zervec;
             0.5*(-vn(indices).*(C1(indices).^2 + C2(indices).^2) - (mss(indices) - 2*kappa(indices).*(C(indices)-C0) - zetac(indices))/etacb);
             tns(indices);
-            -0.5*P*onevec+C2(indices).*(2*K*U(indices) + zeta(indices) + (0.5*zetac(indices)-kappa(indices)*C0).*(C(indices)-C0+0.5*zetac(indices)./kappa(indices)) + (eta+etab)*dsvs(indices) + etab*C(indices).*vn(indices))+0.5*xi*vn(indices)+0.5*fc*onevec;%-0.5*P*onevec+C2(0).*tss(indices)+0.5*xi*vn(indices)+0.5*fc*onevec;
+            -0.5*P*onevec+C2(indices).*(2*K*U(indices) + zeta(indices) + (zc0_on*0.5*zetac(indices)-kappa(indices)*C0).*(C(indices)-C0+zc0_on*0.5*zetac(indices)./kappa(indices)) + 2*etab*dsvs(indices) + etab*C(indices).*vn(indices))+0.5*xi*vn(indices)+0.5*fc*onevec;%-0.5*P*onevec+C2(0).*tss(indices)+0.5*xi*vn(indices)+0.5*fc*onevec;
             zervec;
             zervec;
             dsvs(indices);%0.5*((tss(indices) - 2*K*U(0) - zeta(0))/etab - C(0).*vn(indices));

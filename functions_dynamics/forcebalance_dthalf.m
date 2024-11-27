@@ -1,4 +1,4 @@
-function [sint, Vint, Par, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, dsmss, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, SolFound] = forcebalance_dthalf(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, kb, x0b, kp, psi0b, optode, t, delt, FixedPar, P0, thalf_P, tsigma, varargin)
+function [sint, Vint, Par, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, dsmss, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, SolFound] = forcebalance_dthalf(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, kb, x0b, kp, psi0b, optode, t, delt, FixedPar, P0, thalf_P, tsigma, zc0_on, varargin)
 SolFound = true;
 
 if t==0
@@ -37,7 +37,7 @@ end
 try
     sol = bvp4c( @ode, ...
                  @bc, ...
-                 solinit,optode, U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, dskappa, K, xi, kb, x0b, kp, psi0b, FixedPar, t, P0, thalf_P, tsigma);
+                 solinit,optode, U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, dskappa, K, xi, kb, x0b, kp, psi0b, FixedPar, t, P0, thalf_P, tsigma, zc0_on);
 catch ME
     ME
     disp(strcat('could not find solution at time t=',num2str(t)));

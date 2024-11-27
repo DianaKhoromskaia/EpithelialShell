@@ -174,12 +174,12 @@ while t < tmax
     if t==0
         tic
         [svec, v, P1, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, tns, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, Lnew_dthalf, eps1new_dthalf, sfun_dthalf, snewfun_dthalf, snewvec_dthalf, SolFound] ...
-            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, sgrid);
+            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, zc0_on, sgrid);
         tcomp = toc;
     else
         tic
         [svec, v, P1, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, tns, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, Lnew_dthalf, eps1new_dthalf, sfun_dthalf, snewfun_dthalf, snewvec_dthalf, SolFound] ...
-            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, solold, sfun, snewfun);
+            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, zc0_on, solold, sfun, snewfun);
         tcomp = toc;
     end
     
@@ -216,7 +216,7 @@ while t < tmax
             X0_dthalf = X0 + 0.5*dt*dX0;
             %% solve force balance at time t+dt/2 with step dt/2:
             [svec_dt2half, v_dt2half, P1_dt2half, sol_dt2half, vs_dt2half, dsvs_dt2half, vkk_dt2half, tss_dt2half, vn_dt2half, dsvn_dt2half, mss_dt2half, tns_dt2half, ds2vn_dt2half, dV_dt2half, dX0_dt2half, Lnew_dt2half, eps1new_dt2half, sfun_dt2half, snewfun_dt2half, snewvec_dt2half, SolFound_dt2half] ...
-                = forcebalance_dthalf(U_dthalf, dsU_dthalf, C1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, Psi_dthalf, X_dthalf, Z_dthalf, X0_dthalf, L_dthalf, L0, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, eta, etab, etacb, etap, eps1abs, xintegral_dthalf, fext, kappa_dthalf, dskappa_dthalf, K, xi, optode, t+dt/2, dt/2, FixedPar, P0, thalf_P, tsigma, sol, sfun_dthalf, snewfun_dthalf);
+                = forcebalance_dthalf(U_dthalf, dsU_dthalf, C1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, Psi_dthalf, X_dthalf, Z_dthalf, X0_dthalf, L_dthalf, L0, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, eta, etab, etacb, etap, eps1abs, xintegral_dthalf, fext, kappa_dthalf, dskappa_dthalf, K, xi, optode, t+dt/2, dt/2, FixedPar, P0, thalf_P, tsigma, zc0_on, sol, sfun_dthalf, snewfun_dthalf);
             
             %% evolve system with time step dt/2:
             [C1_dt2half, dsC1_dt2half, C2_dt2half, C_dt2half, dsC_dt2half, X_dt2half, Psi_dt2half, Z_dt2half, U_dt2half, dsU_dt2half, kappa_dt2half, dskappa_dt2half, zeta_dt2half, dszeta_dt2half, zetac_dt2half, dszetac_dt2half, zetanem_dt2half, dszetanem_dt2half, zetacnem_dt2half, dszetacnem_dt2half, xintegral_dt2half, solnem_dt2half, s0_dt2half, s0inv_dt2half, Q_dt2half] = ...

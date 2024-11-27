@@ -59,7 +59,7 @@ dvds = [ds2vs;
         zervec = zeros(size(s(indices)));
         onevec = ones(size(s(indices)));
         
-        dvds(:,indices) =   [(-dszeta(indices) + zc0_on*dszetac(indices).*C1(indices) + (zc0_on*0.5*zetac(indices)./kappa(indices)-C0).*(zc0_on*dszetac(indices)+(C0-zc0_on*0.5*zetac(indices)./kappa(indices)).*dskappa(indices)./kappa(indices)))/(eta+etab);%-C2(0).*tns(indices);%zervec;
+        dvds(:,indices) =   [(2/3)*(-dszeta(indices) + zc0_on*dszetac(indices).*C1(indices) + (zc0_on*0.5*zetac(indices)./kappa(indices)-C0).*(zc0_on*dszetac(indices)+(C0-zc0_on*0.5*zetac(indices)./kappa(indices)).*dskappa(indices)./kappa(indices)))/(eta+etab);%-C2(0).*tns(indices);%zervec;
             zervec;
             0.5*(-vn(indices).*(C1(indices).^2 + C2(indices).^2) - (mss(indices) - 2*kappa(indices).*(C(indices)-C0) - zetac(indices))/etacb);
             tns(indices);

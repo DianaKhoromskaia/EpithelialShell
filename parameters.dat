@@ -1,10 +1,10 @@
 %% Numerical parameters
-dt=0.0001; % initial time step
-tmax=5; % end time
+dt=0.000001; % initial time step
+tmax=100; % end time
 FixedPar = 'P'; % set to 'V' or 'P' for fixed or free volume, respectively
-dtmax = 0.001; % maximal time step
+dtmax = 0.0001; % maximal time step
 Adaptive = 'On'; % adaptive time step option
-tol = 0.0001; % relative tolerance on adaptive time step
+tol = 0.001; % relative tolerance on adaptive time step
 %
 %%cut-off for nematic equations at SP and at NP of the surface in units of interval length:
 %
@@ -25,6 +25,7 @@ nplot = 1e+3;       % for plotting and saving to file
 npoints = 1e+6;     % for initialising functions on sphere, and for derivatives
 %
 %% Physical parameters
+l_open = 0.8; % position of the opening
 R0 = 1;
 C0=0; % preferred curvature
 h = 1/4; % thickness of epithelium in units of R0
@@ -33,10 +34,10 @@ etab = 1; % bulk viscosity
 etacb = 1; % bulk bending viscosity
 etap = 1e-4; % pressure viscosity (for FixedPar='P')
 kappa0 = 1; % bending modulus
-%xi = 0; %normal friction coefficient
 K = 200; % bulk elastic modulus
 lc = 0.1*R0; % nematic length scale in units of R0
 P0 = 0; % value of the pressure inside the shape
 thalf_P = 0; %half-time of pressure application
 xi = 0; % normal friction coefficient
 zetasrect=0.002; %width of the sigmoidal defining the 'Rectangle' active profile
+zc0_on=0;

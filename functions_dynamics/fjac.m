@@ -17,7 +17,7 @@ switch s
         
         dfdv(4,5) = 1;
         
-        dfdv(5,1) = C2(0)*(eta+etab);
+        dfdv(5,1) = C2(0)*2*etab;
         dfdv(5,2) = 0.5*xi + C2(0)*(etab*C(0));
 
         dfdv(8,1) = 1;
@@ -40,7 +40,7 @@ switch s
         
         dfdv(4,5) = 1;
         
-        dfdv(5,1) = C2(L)*(eta+etab);
+        dfdv(5,1) = C2(L)*2*etab;
         dfdv(5,2) = 0.5*xi + C2(L)*(etab*C(L));
 
         dfdv(8,1) = 1;

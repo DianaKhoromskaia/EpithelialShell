@@ -6,6 +6,18 @@ function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew,
     
     snew = [0. snewfun(svec2) Lnew]; %snewvec;%
     
+    % DEBUG
+    if max(abs(vn(svec))) > 1e4 || max(abs(tns(svec))) > 1e5 || max(abs(mss(svec))) > 1e5
+        fprintf('\nDEBUG large mechanical fields in evolvefunctions\n');
+        fprintf('t = %.12g\n', t);
+        fprintf('max|vn|  = %.12e\n', max(abs(vn(svec))));
+        fprintf('max|tns| = %.12e\n', max(abs(tns(svec))));
+        fprintf('max|mss| = %.12e\n', max(abs(mss(svec))));
+        save('debug_large_fields.mat', ...
+            't','svec','vn','tns','mss','dsvn','dsvs');
+    end
+    % EDEBUG
+    
     sgrid = snew;
     %sgridnem = [0. snew((snew > eps1)&(snew < (Lnew-eps2))) Lnew];%snew;
     svec1 = linspace(0,Lnew,npoints);
@@ -37,6 +49,22 @@ function [C1new, dsC1new, C2new, Cnew, dsCnew, Xnew, Psinew, Znew, Unew, dsUnew,
     
     %% s0 on new shape, if la<1:
     s0new = griddedInterpolant(snew, s0(svec3),'spline');
+    
+    % DEBUG
+    s0vals = s0(svec3);
+    if any(diff(s0vals) <= 0) || any(diff(snew) <= 0)
+        fprintf('\nDEBUG non-monotonic map in evolvefunctions\n');
+        fprintf('t = %.12g\n', t);
+        fprintf('min diff s0vals = %.12e\n', min(diff(s0vals)));
+        fprintf('min diff snew   = %.12e\n', min(diff(snew)));
+        fprintf('max diff s0vals = %.12e\n', max(diff(s0vals)));
+        fprintf('max diff snew   = %.12e\n', max(diff(snew)));
+        save('debug_nonmonotonic_map.mat', ...
+            't','svec','svec3','snew','s0vals');
+        error('Stopping: non-monotonic map before s0inv');
+    end
+    % EDEBUG
+
     s0inv = griddedInterpolant(s0(svec3), snew,'spline');
     
     %% solve nematic Euler-Lagrange equations

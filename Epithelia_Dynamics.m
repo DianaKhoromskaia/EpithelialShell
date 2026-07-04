@@ -1,4 +1,5 @@
 
+
 % Dynamics for epithelial shells with active tensions and bending moments (isotropic and nematic)
 % Code for the Publication "Active morphogenesis of patterned epithelial shells"
 
@@ -12,7 +13,9 @@ function Epithelia_Dynamics(dirname, ParametersFile, ProfileFile)
 % ParametersFile : input file for parameters of the simulation
 % ProfileFile : input file for active profiles
 
-addpath('./functions_dynamics');
+thisFile = mfilename('fullpath');
+thisDir = fileparts(thisFile);
+addpath(fullfile(thisDir, 'functions_dynamics'));
 
 %% set physical parameters:
 fid=fopen(ParametersFile);
@@ -27,16 +30,22 @@ fclose(fid);
 
 Plotting = 'Off'; % set 'On' or 'Off' to save results as movies
 
+% labels for errors
+names = {'X','Z','dsC'};
+
 %options for bvp-solvers: -- set 'stats' to 'off' if details of solver output not required
 
-optode = bvpset('RelTol', epsoderel, 'AbsTol', epsodeabs, 'stats','on','Vectorized', 'on','FJacobian',@fjac,'BCJacobian',@bcjac,'NMax', 1e+5); %'FJacobian',@fjac,'BCJacobian',@bcjac,
-optode_nem = bvpset('RelTol', 1e-4, 'AbsTol', 1e-6, 'stats','on','Vectorized', 'on','FJacobian',@fjac_nematic,'BCJacobian',@bcjac_nematic,'NMax', 1e+5);
+% changed 'on' to 'off' after 'Vectorized' and '@fjac' to '[]'
+
+optode = bvpset('RelTol', epsoderel, 'AbsTol', epsodeabs, 'stats','off','Vectorized', 'on','FJacobian',@fjac,'BCJacobian',@bcjac,'NMax', 1e+5); %'FJacobian',@fjac,'BCJacobian',@bcjac,
+optode_nem = bvpset('RelTol', 1e-4, 'AbsTol', 1e-6, 'stats','off','Vectorized', 'on','FJacobian',@fjac_nematic,'BCJacobian',@bcjac_nematic,'NMax', 1e+5);
 
 %% initialise spherical shape on half of s-interval
 z0 = 0.; %offset in z-direction
 L = pi*R0;
 L0 = pi*R0;
-[C1, C2, C, dsC1, dsC2, dsC, Psi, X, Z, X0, xintegral, svec1, U, dsU, Q, dsQ, dsw0, dswL, fs, s0, Qgrid] = initialisesphere(L0, R0, z0, npoints);
+U0_value = R0*P0/(4*K);
+[C1, C2, C, dsC1, dsC2, dsC, Psi, X, Z, X0, xintegral, svec1, U, dsU, Q, dsQ, dsw0, dswL, fs, s0, Qgrid] = initialisesphere(L0, R0, z0, npoints, U0_value);
 eps1 = eps1abs*L;
 eps2 = eps2abs*L;
 V0 = (4/3)*pi*R0^3;
@@ -69,20 +78,77 @@ P = P0*(1-sigmoidal(0,thalf_P,tsigma));
 % ..._la - position of half-maximum or peak, resp.
 % ..._sigma - controls sharpness of sigmoid or width of Gaussian/Rectangle
 % ..._par - prefactor for profile
-% ..._thalf - time at whcich the profile start appearing (the active profiles are modulated by a sigmoid in time)
+% ..._thalf - time at whcich the profile starts appearing (the active profiles are modulated by a sigmoid in time)
 % if 'Sigmoidal' and ..._la=1 then profile is flat: profile= ..._const
         
 [kappa, dskappa, zeta, dszeta, zetac, dszetac, zetanem, dszetanem , zetacnem, dszetacnem, dir2, zeta_controls, zeta_profiles, zeta_implementation_types, zeta_consts, zeta_las, zeta_facs, zeta_sigmas, zeta_thalfs, N_regions, write9, write91, write92, write93, write94] = initialiseprofiles(ProfileFile, sgrid, svec1, L, npoints, L0, s0, Q, t, tsigma, dir1, zetasrect, kappa0);
 
-%% output files:
-if dirname
-    dir2=dirname
+% largest t_half for active profiles, so that simulations don't stop at a SS reached before this time
+latest_profile_time = max(zeta_thalfs) + 3*tsigma;
+
+% latest externally imposed pressure transition
+if P2_on
+    latest_pressure_time = t0_P2 + max(3*thalf_P2, 0.05*t0_P2);
+else
+    latest_pressure_time = 0;
 end
 
-mkdir(dir2);
-copyfile(ProfileFile,strcat(dir2,'/profiles_file.dat'));
-copyfile(ParametersFile,strcat(dir2,'/parameters.dat'));
+% latest time at which anything is still being imposed
+latest_forced_time = max([latest_profile_time, latest_pressure_time]);
+
+
+%% output files:
+if isnumeric(dirname) && dirname == 0
+    % auto-generate a folder name if dirname==0
+    dir2 = ['OUTPUTS_', datestr(now,'yyyymmdd_HHMMSS')];
+elseif isstring(dirname) || ischar(dirname)
+    if strlength(string(dirname)) > 0
+        dir2 = char(dirname);
+    else
+        dir2 = ['OUTPUTS_', datestr(now,'yyyymmdd_HHMMSS')];
+    end
+else
+    dir2 = ['OUTPUTS_', datestr(now,'yyyymmdd_HHMMSS')];
+end
+
+%% --- Robust input-file handling (works both locally and on cluster) ---
+rootdir = pwd;
+
+if isfile(ParametersFile)
+    paramSrc = char(java.io.File(ParametersFile).getCanonicalPath());
+elseif isfile(fullfile(rootdir,ParametersFile))
+    paramSrc = char(java.io.File(fullfile(rootdir,ParametersFile)).getCanonicalPath());
+else
+    error('Could not find parameter file: %s', ParametersFile);
+end
+
+if isfile(ProfileFile)
+    profileSrc = char(java.io.File(ProfileFile).getCanonicalPath());
+elseif isfile(fullfile(rootdir,ProfileFile))
+    profileSrc = char(java.io.File(fullfile(rootdir,ProfileFile)).getCanonicalPath());
+else
+    error('Could not find profile file: %s', ProfileFile);
+end
+
+
+if ~exist(dir2,'dir')
+    mkdir(dir2);
+end
+assert(exist(dir2,'dir')==7,'Could not create output directory.');
 cd(dir2);
+
+% save copies of the exact input files into the output directory
+paramDst   = fullfile(pwd, 'parameters.dat');
+profileDst = fullfile(pwd, 'profiles_file.dat');
+
+if ~strcmp(paramSrc, paramDst)
+    copyfile(paramSrc, paramDst);
+end
+
+if ~strcmp(profileSrc, profileDst)
+    copyfile(profileSrc, profileDst);
+end
+
 
 % plot profiles to check:
 % figure(1)
@@ -108,7 +174,17 @@ filename1 = 'observables.dat';
 fileID = fopen(filename1,'w');
 fprintf(fileID, '%s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \t %s \n', 't', 'dt', 'v_n(seval)', 'P', 'X(seval)', 'C2(seval)','pole-pole', 'area', 'tcomp [sec]', 'L', 'V','X0', 'nmesh','intersect', 'seval', 'f_c','I(L)');
 formatSpec = '%e \t %e \t %6.5f \t %6.5f \t %6.5f \t %6.5f \t %6.5f \t %6.5f \t %6.5f \t %6.5f \t %6.5f \t %6.5f \t %i \t %i \t %2.1f \t %6.5f \t %9.8f \n';
-fprintf(fileID, formatSpec, t, dt, 0., P0, X(seval), C2(seval), Z(L0)-Z(0.), 2*pi*xintegral, 0., L0, V0, X0, 0., 0., seval, 0, 0);
+
+P1_val = P0*(1-sigmoidal(t,thalf_P,tsigma));
+
+if P2_on
+    S2 = 1-sigmoidal(t,t0_P2,thalf_P2);
+    P_init = P1_val + (P2-P1_val)*S2;
+else
+    P_init = P1_val;
+end
+
+fprintf(fileID, formatSpec, t, dt, 0., P_init, X(seval), C2(seval), Z(L0)-Z(0.), 2*pi*xintegral, 0., L0, V0, X0, 0., 0., seval, 0, 0);
 
 svecuni = linspace(0., L, nplot);%uniform grid for saving
 
@@ -120,6 +196,7 @@ dlmwrite(filename2, C1(svecuni), '-append','precision', '%10.9f' ,'delimiter', '
 dlmwrite(filename2, C2(svecuni), '-append','precision', '%10.9f' ,'delimiter', '\t');
 dlmwrite(filename2, C(svecuni), '-append','precision', '%10.9f' ,'delimiter', '\t');
 dlmwrite(filename2, dsC1(svecuni), '-append','precision', '%10.9f' ,'delimiter', '\t');
+dlmwrite(filename2, dsC2(svecuni), '-append','precision', '%10.9f' ,'delimiter', '\t');
 dlmwrite(filename2, dsC(svecuni), '-append','precision', '%10.9f' ,'delimiter', '\t');
 
 filename3 = 'x.dat';
@@ -174,12 +251,12 @@ while t < tmax
     if t==0
         tic
         [svec, v, P1, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, tns, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, Lnew_dthalf, eps1new_dthalf, sfun_dthalf, snewfun_dthalf, snewvec_dthalf, SolFound] ...
-            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, zc0_on, sgrid);
+            = forcebalance(U, dsU, C1, C2, C, C0, dsC, dsC1, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, dszetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, P2_on, P2, t0_P2, thalf_P2, tsigma, zc0_on, etacb_DC_on, sgrid);
         tcomp = toc;
     else
         tic
         [svec, v, P1, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, tns, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, Lnew_dthalf, eps1new_dthalf, sfun_dthalf, snewfun_dthalf, snewvec_dthalf, SolFound] ...
-            = forcebalance(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, tsigma, zc0_on, solold, sfun, snewfun);
+            = forcebalance(U, dsU, C1, C2, C, C0, dsC, dsC1, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, dszetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, dt, Adaptive, FixedPar, P0, thalf_P, P2_on, P2, t0_P2, thalf_P2, tsigma, zc0_on, etacb_DC_on, solold, sfun, snewfun);
         tcomp = toc;
     end
     
@@ -197,6 +274,23 @@ while t < tmax
                 U, C1, dsC1, C2, C, C0, dsC, kappa, dskappa, X, Psi, Z, snewfun_dt, sfun_dt, t, dt, tsigma, L, Lnew_dt, L0, eps1, eps2, etacb, npoints, solnem, lc, s0, optode_nem, N_regions, zetasrect, kappa0, write94);
         end
         
+        % DEBUG
+        scheck = linspace(0,L,1000);
+        stretch_rate = dsvs(svec) + C2(svec).*vn(svec);
+        if mod(i,100)==0 || max(abs(stretch_rate)) > 10 || min(stretch_rate) < -10
+            fprintf('\nDEBUG full-step fields at t = %.12g, i = %d\n', t, i);
+            fprintf('max|vn|          = %.12e\n', max(abs(vn(svec))));
+            fprintf('max|vs|          = %.12e\n', max(abs(vs(svec))));
+            fprintf('max|dsvs|        = %.12e\n', max(abs(dsvs(svec))));
+            fprintf('max|dsvn|        = %.12e\n', max(abs(dsvn(svec))));
+            fprintf('max|mss|         = %.12e\n', max(abs(mss(svec))));
+            fprintf('max|tns|         = %.12e\n', max(abs(tns(svec))));
+            fprintf('max|dsC_dt|      = %.12e\n', max(abs(dsC_dt(scheck))));
+            fprintf('max stretch rate = %.12e\n', max(stretch_rate));
+            fprintf('min stretch rate = %.12e\n', min(stretch_rate));
+        end
+        % EDEBUG
+
         if strcmp(Adaptive,'On')
             %% evolve system with time step dt/2:
             if t==0
@@ -216,7 +310,7 @@ while t < tmax
             X0_dthalf = X0 + 0.5*dt*dX0;
             %% solve force balance at time t+dt/2 with step dt/2:
             [svec_dt2half, v_dt2half, P1_dt2half, sol_dt2half, vs_dt2half, dsvs_dt2half, vkk_dt2half, tss_dt2half, vn_dt2half, dsvn_dt2half, mss_dt2half, tns_dt2half, ds2vn_dt2half, dV_dt2half, dX0_dt2half, Lnew_dt2half, eps1new_dt2half, sfun_dt2half, snewfun_dt2half, snewvec_dt2half, SolFound_dt2half] ...
-                = forcebalance_dthalf(U_dthalf, dsU_dthalf, C1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, Psi_dthalf, X_dthalf, Z_dthalf, X0_dthalf, L_dthalf, L0, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, eta, etab, etacb, etap, eps1abs, xintegral_dthalf, fext, kappa_dthalf, dskappa_dthalf, K, xi, optode, t+dt/2, dt/2, FixedPar, P0, thalf_P, tsigma, zc0_on, sol, sfun_dthalf, snewfun_dthalf);
+                = forcebalance_dthalf(U_dthalf, dsU_dthalf, C1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, dsC1_dthalf, Psi_dthalf, X_dthalf, Z_dthalf, X0_dthalf, L_dthalf, L0, zeta_dthalf, dszeta_dthalf, zetac_dthalf, dszetac_dthalf, zetanem_dthalf, dszetanem_dthalf, zetacnem_dthalf, dszetacnem_dthalf, eta, etab, etacb, etap, eps1abs, xintegral_dthalf, fext, kappa_dthalf, dskappa_dthalf, K, xi, optode, t+dt/2, dt/2, FixedPar, P0, thalf_P, P2_on, P2, t0_P2, thalf_P2, tsigma, zc0_on, etacb_DC_on, sol, sfun_dthalf, snewfun_dthalf);
             
             %% evolve system with time step dt/2:
             [C1_dt2half, dsC1_dt2half, C2_dt2half, C_dt2half, dsC_dt2half, X_dt2half, Psi_dt2half, Z_dt2half, U_dt2half, dsU_dt2half, kappa_dt2half, dskappa_dt2half, zeta_dt2half, dszeta_dt2half, zetac_dt2half, dszetac_dt2half, zetanem_dt2half, dszetanem_dt2half, zetacnem_dt2half, dszetacnem_dt2half, xintegral_dt2half, solnem_dt2half, s0_dt2half, s0inv_dt2half, Q_dt2half] = ...
@@ -224,26 +318,159 @@ while t < tmax
                 vs_dt2half, dsvs_dt2half, vkk_dt2half, vn_dt2half, dsvn_dt2half, mss_dt2half, tns_dt2half, ...
                 U_dthalf, C1_dthalf, dsC1_dthalf, C2_dthalf, C_dthalf, C0, dsC_dthalf, kappa_dthalf, dskappa_dthalf, X_dthalf, Psi_dthalf, Z_dthalf, snewfun_dt2half, sfun_dt2half, t+dt/2, dt/2, tsigma, L_dthalf, Lnew_dt2half, L0, eps1, eps2, etacb, npoints, solnem_dthalf, lc, s0_dthalf, optode_nem, N_regions, zetasrect, kappa0, write94);
             
-            %% compare results for adaptive time step after dt and 2*(dt/2):
-            scompare = linspace(0,L,1000);
+            %% compare results for adaptive time step after dt and 2*(dt/2)
+            scompare = linspace(0,L,max(1000,2*npoints));
             scompare_dt = snewfun_dt(scompare);
             scompare_dt2half = snewfun_dt2half(snewfun_dthalf(scompare));
             
-            % exclude values from relative error calculation which are too close to zero:
+            % exclude regions too close to singular points (s=0 and s=L)
+            pole_cut = 0.02 * L;
+            interior_mask = (scompare > pole_cut) & (scompare < L - pole_cut);
+
+            % exclude values from relative error calculation which are too close to zero
             cutoff = 1e-3;
+
+            % vectors on comparison grid
+            X_dt_vec = X_dt(scompare_dt);
+            X_dt2half_vec = X_dt2half(scompare_dt2half);
+            
             Z_dt_vec = Z_dt(scompare_dt);
             Z_dt2half_vec = Z_dt2half(scompare_dt2half);
+            
+            % --- X error with floor ---
+            X_scale = max(abs(X_dt_vec));
+            X_floor_abs = 1e-2;
+            X_floor_rel = 0.02 * X_scale;
+            X_floor = max(X_floor_abs, X_floor_rel);
+            
+            denomX = max(abs(X_dt_vec), X_floor*ones(size(X_dt_vec)));
+            rel_X = abs(X_dt_vec - X_dt2half_vec) ./ denomX;
+            
+            rel_X(~interior_mask) = -Inf;   % exclude regions close to poles
+            
+            [errX, idxX] = max(rel_X);
+            
+            % --- Z error with floor ---
+            Z_scale = max(abs(Z_dt_vec));
+            Z_floor_abs = 1e-2;
+            Z_floor_rel = 0.02 * Z_scale;
+            Z_floor = max(Z_floor_abs, Z_floor_rel);
+            
+            denomZ = max(abs(Z_dt_vec), Z_floor*ones(size(Z_dt_vec)));
+            rel_Z = abs(Z_dt_vec - Z_dt2half_vec) ./ denomZ;
+            
+            maskZ = abs(Z_dt_vec) > cutoff;
+            rel_Z(~maskZ | ~interior_mask) = -Inf;   % exclude regions close to poles
+            
+            [errZ, idxZ] = max(rel_Z);
+            
+            % dsC vectors
             dsC_dt_vec = dsC_dt(scompare_dt);
             dsC_dt2half_vec = dsC_dt2half(scompare_dt2half);
+            dsC_scale = max(abs(dsC_dt_vec));
             
-            format long 
+            dsC_floor_abs = 0.2;              % minimum absolute floor
+            dsC_floor_rel = 0.2 * dsC_scale;   % shape-dependent part
             
-            errorvec = [max(abs(X_dt(scompare_dt(2:end-1))-X_dt2half(scompare_dt2half(2:end-1)))./abs(X_dt(scompare_dt(2:end-1))));...
-                max(abs((Z_dt_vec(abs(Z_dt_vec)>cutoff)-Z_dt2half_vec(abs(Z_dt_vec)>cutoff))./Z_dt_vec(abs(Z_dt_vec)>cutoff)));...
-                max(abs((dsC_dt_vec(abs(dsC_dt_vec)>cutoff)-dsC_dt2half_vec(abs(dsC_dt_vec)>cutoff))./dsC_dt_vec(abs(dsC_dt_vec)>cutoff)))]
+            dsC_floor = max(dsC_floor_abs, dsC_floor_rel);
             
+            denom = max(abs(dsC_dt_vec), dsC_floor*ones(size(dsC_dt_vec)));
+            rel_dsC = abs(dsC_dt_vec - dsC_dt2half_vec) ./ denom;
+            
+            [errdsC, idx_dsC] = max(rel_dsC);
+
+            errorvec = [errX; errZ; errdsC];
             error = max(errorvec);
-            dtnext = min(0.9*dt*min([max([tol/error 0.5]) 1.5]), dtmax)
+            dominant = find(errorvec==error,1);
+            
+            if error > tol || dt < 1e-6
+
+                fprintf('\nDEBUG X/Z error location\n');
+                fprintf('t        = %.12g\n', t);
+                fprintf('dt       = %.12e\n', dt);
+            
+                fprintf('errX     = %.12e\n', errX);
+                fprintf('idxX     = %d\n', idxX);
+                fprintf('s_X      = %.12e\n', scompare(idxX));
+                fprintf('X_dt     = %.12e\n', X_dt_vec(idxX));
+                fprintf('X_2h     = %.12e\n', X_dt2half_vec(idxX));
+                fprintf('X_absdif = %.12e\n', abs(X_dt_vec(idxX)-X_dt2half_vec(idxX)));
+                fprintf('X_floor  = %.12e\n', X_floor);
+                fprintf('X_scale  = %.12e\n', X_scale);
+            
+                fprintf('errZ     = %.12e\n', errZ);
+                fprintf('idxZ     = %d\n', idxZ);
+                fprintf('s_Z      = %.12e\n', scompare(idxZ));
+                fprintf('Z_dt     = %.12e\n', Z_dt_vec(idxZ));
+                fprintf('Z_2h     = %.12e\n', Z_dt2half_vec(idxZ));
+                fprintf('Z_absdif = %.12e\n', abs(Z_dt_vec(idxZ)-Z_dt2half_vec(idxZ)));
+                fprintf('Z_floor  = %.12e\n', Z_floor);
+                fprintf('Z_scale  = %.12e\n', Z_scale);
+            
+                fprintf('max(abs(dsC_dt_vec)) = %.12e\n',max(abs(dsC_dt_vec)));
+                fprintf('abs(dsC_dt(idx))     = %.12e\n',abs(dsC_dt_vec(idx_dsC)));
+                fprintf('mean(abs(dsC_dt_vec))= %.12e\n',mean(abs(dsC_dt_vec)));
+            
+            end
+
+            % --- rescue X/Z estimator plateau ---
+            X_absdiff_max = max(abs(X_dt_vec(interior_mask) - X_dt2half_vec(interior_mask)));
+            Z_absdiff_max = max(abs(Z_dt_vec(interior_mask) - Z_dt2half_vec(interior_mask)));
+            
+            % --- robust absolute-geometry acceptance ---
+            X_tol_abs = 2e-3;
+            Z_tol_abs = 2e-3;
+            
+            Adaptive_plateau_accept = strcmp(Adaptive,'On') && ...
+                error > tol && ...
+                errdsC < tol && ...
+                X_absdiff_max < X_tol_abs && ...
+                Z_absdiff_max < Z_tol_abs;
+            
+            if Adaptive_plateau_accept
+                fprintf('\nWARNING: accepting step by absolute-geometry criterion.\n');
+                fprintf('t = %.12g, i = %d\n', t, i);
+                fprintf('dt = %.12e\n', dt);
+                fprintf('errX = %.12e, errZ = %.12e, errdsC = %.12e\n', errX, errZ, errdsC);
+                fprintf('X_absdiff_max = %.12e\n', X_absdiff_max);
+                fprintf('Z_absdiff_max = %.12e\n', Z_absdiff_max);
+                fprintf('dominant = %s\n', names{dominant});
+
+                error_before_accept = error;
+                fprintf('error before accept = %.12e\n', error_before_accept); 
+                error = 0.9*tol;
+                fprintf('error after accept  = %.12e\n', error);
+            end
+
+            % DEBUG
+            if errdsC >= max(errX,errZ) && (error > tol || dt < 1e-6)
+                fprintf('\nDEBUG dsC error location\n');
+                fprintf('t = %.12g, i = %d\n', t, i);
+                fprintf('dt = %.12e\n', dt);
+                fprintf('errdsC = %.12e\n', errdsC);
+                fprintf('idx_dsC = %d\n', idx_dsC);
+                fprintf('scompare = %.12e\n', scompare(idx_dsC));
+                fprintf('scompare_dt = %.12e\n', scompare_dt(idx_dsC));
+                fprintf('scompare_dt2half = %.12e\n', scompare_dt2half(idx_dsC));
+                fprintf('dsC_dt = %.12e\n', dsC_dt_vec(idx_dsC));
+                fprintf('dsC_dt2half = %.12e\n', dsC_dt2half_vec(idx_dsC));
+            end
+            
+            
+            if error > 0.1*tol || dt < 1e-6
+                fprintf('\nDEBUG adaptive at t = %.12g, i = %d\n', t, i);
+                fprintf('dt      = %.12e\n', dt);
+                fprintf('errX    = %.12e\n', errorvec(1));
+                fprintf('errZ    = %.12e\n', errorvec(2));
+                if length(errorvec) >= 3
+                    fprintf('errdsC  = %.12e\n', errorvec(3));
+                end
+                fprintf('error   = %.12e\n', error);
+                fprintf('tol     = %.12e\n', tol);
+            end
+            % EDEBUG
+
+            dtnext = min(0.9*dt*min([max([tol/error 0.5]) 1.5]), dtmax);
             if dtnext < 1e-10
                 dtnext = 1e-10
             end
@@ -251,7 +478,30 @@ while t < tmax
             dtnext = dt; 
         end
 
-       if (error<tol)||(dtnext==1e-10)||strcmp(Adaptive,'Off') %% accept step only if tol satisfied, accept first step always; instead: first 1000 steps; ||(i<1000)
+        % DEBUG
+        if strcmp(Adaptive,'On') && (dtnext <= 1e-10) && (error >= tol)
+            fprintf('\n');
+            fprintf('Stopping: dt reached minimum value.\n');
+            fprintf('t      = %.12g\n', t);
+            fprintf('dt     = %.12g\n', dt);
+            fprintf('dtnext = %.12g\n', dtnext);
+            fprintf('error  = %.12g\n', error);
+            fprintf('tol    = %.12g\n', tol);
+            fprintf('errX   = %.12g\n',errX);
+            fprintf('errZ   = %.12g\n',errZ);
+            fprintf('errdsC = %.12g\n',errdsC);
+            fprintf('dominant = %s\n',names{dominant});
+            fprintf('X abs diff max = %.12g\n',X_absdiff_max);
+            fprintf('Z abs diff max = %.12g\n',Z_absdiff_max);
+        
+            save('debug_dtmin_stop.mat');
+        
+            dlmwrite('steadystate.dat',-1);
+            break
+        end
+        % EDEBUG
+        
+       if (error<tol)||strcmp(Adaptive,'Off') %% accept step only if tol satisfied, accept first step always; instead: first 1000 steps; ||(i<1000)
             %% update remaining quantities with dt:
             C1 = C1_dt;
             dsC1 = dsC1_dt;
@@ -286,7 +536,16 @@ while t < tmax
                 P = P1(1);
                 V = V0;
             elseif strcmp(FixedPar,'P')
-                P = P0*(1-sigmoidal(t,thalf_P,tsigma))-etap*P1(1);
+                P1_val = P0*(1-sigmoidal(t,thalf_P,tsigma));
+                if P2_on
+                    S2 = 1-sigmoidal(t,t0_P2,thalf_P2);
+                    Pbase = P1_val + (P2-P1_val)*S2;
+                else
+                    Pbase = P1_val;
+                end
+                
+                P = Pbase - etap*P1(1);
+
                 V = V + dt*dV;
             end
             L = Lnew_dt;
@@ -310,7 +569,8 @@ while t < tmax
                 %% where to evaluate
                                 
                 savetofile(X, Z, Psi, svec, snewvec_dt, seval, fileID, formatSpec, t, dt, P1, P, C1, C2, C, dsC1, dsC, xintegral, tcomp, L, dX0, V, X0, sol.stats.nmeshpoints, v, vs, vn, tss, U, Q, s0, kappa, zeta, zetac, zetanem, zetacnem, filename2, filename3, filename4, filename41, filename5, filename6, filename7, filename9, filename91, filename92, filename93, filename94, write9, write91, write92, write93, write94, filename10, filename11, filename12, filename13, filename14, n);
-                
+                fflush(fileID);
+
                 n = n + 1;
             end
          else
@@ -323,7 +583,7 @@ while t < tmax
         break;
     end
     %% additional stopping criterion for successfull relaxation to steady state:
-    if (i>1000)&&(max(abs(vn(svec)))<1e-4)
+    if (t > latest_forced_time) && (i>1000) && (max(abs(vn(svec)))<1e-4)
         if  strcmp(Plotting,'On')
             plotting(snewvec_dt, sol, t, told, P, P0, V, V0, R0, X0, X, Z, Xinit, Zinit, sinit);
         end
@@ -338,5 +598,5 @@ while t < tmax
     end
 end
 close all;
-cd ..
+cd(rootdir);
 end

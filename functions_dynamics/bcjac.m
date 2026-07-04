@@ -1,4 +1,4 @@
-function [dbcdya, dbcdyb, dbcdp] = bcjac(ya, yb, varpar, U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab,etacb, etap, xintegral, fext, kappa, dskappa, K, xi, FixedPar, t, P0, thalf_P, tsigma, zc0_on)
+function [dbcdya, dbcdyb, dbcdp] = bcjac(ya, yb, varpar, U, dsU, C1, C2, C, C0, dsC, dsC1, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, dszetacnem, eta, etab,etacb, etap, xintegral, fext, kappa, dskappa, K, xi, FixedPar, t, P0, thalf_P, P2_on, P2, t0_P2, thalf_P2, tsigma, zc0_on, etacb_DC_on)
 % Jacobian of the residual function for bvp4c
 % size of matrix = (nBC, nreg x nequations)
 %xi=1;

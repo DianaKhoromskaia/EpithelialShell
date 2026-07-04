@@ -1,4 +1,4 @@
-function [dfdv,dfdvar] = fjac(s, v, varpar, U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, dskappa, K, xi, FixedPar, t, P0, thalf_P, tsigma, zc0_on)
+function [dfdv,dfdvar] = fjac(s, v, varpar, U, dsU, C1, C2, C, C0, dsC, dsC1, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, dszetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, dskappa, K, xi, FixedPar, t, P0, thalf_P, P2_on, P2, t0_P2, thalf_P2, tsigma, zc0_on, etacb_DC_on)
 %Jacobian of RHS for the bvp4c solver
 %v = (dsvs, vn, dsvn, mss, tns, dV(s), dX(s), vs, dsnew(s), I(s))
 
@@ -13,8 +13,8 @@ vs = v(8,:);
 %vkk = (tss + zetanem(s) - 2*K*U(s) - zeta(s))/etab;
 %dsvs = vkk - cos(Psi(s)).*vs./X(s) - C(s).*vn;
 
-switch s
-    case 0.
+tolPole = 1e-12;
+if abs(s) < tolPole
         %partial derivatives wrt v-components        
         %dfdv(1,5) = -C2(0);
         
@@ -25,7 +25,7 @@ switch s
         
         dfdv(5,1) = C2(0)*(2*etab);
         dfdv(5,2) = 0.5*xi + C2(0)*(etab*C(0));
-        
+        dfdv(5,4) = etacb_DC_on * ( -C2(0)^2 ); % ADDED
         %dfdv(8,1) = 0.5/etab;
         %dfdv(8,2) = -0.5*C(0);
         dfdv(8,1) = 1;
@@ -51,7 +51,7 @@ switch s
         dfdvar(5,2) = 0.5;
         %dfdvar(1,3) = 1;
 
-    case L
+    elseif abs(s - L) < tolPole
         %partial derivatives wrt v-components
         %dfdv(1,5) = -C2(L);
         
@@ -62,6 +62,7 @@ switch s
         
         dfdv(5,1) = C2(L)*(2*etab);
         dfdv(5,2) = 0.5*xi + C2(L)*(etab*C(L));
+        dfdv(5,4) = etacb_DC_on * ( -C2(L)^2 ); % ADDED    
         %dfdv(5,10) = +1;
         
         %dfdv(8,1) = 0.5/etab;
@@ -90,15 +91,16 @@ switch s
         dfdvar(5,2) = -0.5;
         %dfdvar(1,3) = 1;
         
-    otherwise
+    else
         
         %partial derivatives wrt v-components
         %dfdv(1,5) = -C2(s);
         dfdv(1,1) = -cos(Psi(s))./X(s);
         dfdv(1,2) = -dsC(s);
         dfdv(1,3) = -(etab*C(s) + eta*(C2(s)-C1(s)))/(eta+etab);
+        dfdv(1,4) = etacb_DC_on/(eta+etab) * (cos(Psi(s)).*(C2(s)-C1(s))./X(s) + (dsC(s) - dsC1(s))); % ADDED
         %dfdv(2,5) = dsC(s)/(eta+etab);
-        dfdv(1,5) = - C2(s)/(eta+etab);
+        dfdv(1,5) = - C2(s)/(eta+etab) + etacb_DC_on*C2(s)/(eta+etab); % CHANGED
         dfdv(1,8) = (cos(Psi(s))./X(s)).^2 - ((eta-etab)/(eta+etab))*C1(s).*C2(s);
 
         dfdv(2,3) = 1;
@@ -113,6 +115,7 @@ switch s
         %dfdv(5,1) = C1(s)+C2(s);%
         dfdv(5,1) = (C1(s)+C2(s))*(eta+etab)+2*C1(s)*(-eta);
         dfdv(5,2) = xi+(C1(s)+C2(s))*((etab*C(s)+eta*(C2(s)-C1(s))))+2*C1(s)*eta*((C1(s)-C2(s)));
+        dfdv(5,4) = -etacb_DC_on * ( C1(s).^2 + C2(s).^2 ); % ADDED
         dfdv(5,5) = -cos(Psi(s))./X(s);
         dfdv(5,8) = (C1(s)+C2(s))*((etab-eta)*cos(Psi(s))./X(s))+2*C1(s)*eta*cos(Psi(s))./X(s);
         %dfdv(5,10) = -1/(X(s).*X(s));
@@ -154,7 +157,7 @@ switch s
         
         %dfdvar(1,3) = 1;
         %dfdvar(10,3) = X(s).*sin(Psi(s));
-end
+    end
 
 
 end

@@ -1,4 +1,4 @@
-function [sint, Vint, Par, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, dsmss, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, SolFound] = forcebalance_dthalf(U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, delt, FixedPar, P0, thalf_P, tsigma, zc0_on, varargin)
+function [sint, Vint, Par, sol, vs, dsvs, vkk, tss, vn, dsvn, mss, dsmss, ds2vn, dV, dX0, Lnew_dt, eps1new_dt, sfun_dt, snewfun_dt, snewvec_dt, SolFound] = forcebalance_dthalf(U, dsU, C1, C2, C, C0, dsC, dsC1, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, dszetacnem, eta, etab, etacb, etap, eps1abs, xintegral, fext, kappa, dskappa, K, xi, optode, t, delt, FixedPar, P0, thalf_P, P2_on, P2, t0_P2, thalf_P2, tsigma, zc0_on, etacb_DC_on, varargin)
 SolFound = true;
 
 if t==0
@@ -37,12 +37,18 @@ end
 try
     sol = bvp4c( @ode, ...
                  @bc, ...
-                 solinit,optode, U, dsU, C1, C2, C, C0, dsC, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, dskappa, K, xi, FixedPar, t, P0, thalf_P, tsigma, zc0_on);
+                 solinit,optode, U, dsU, C1, C2, C, C0, dsC, dsC1, Psi, X, Z, X0, L, L0, zeta, dszeta, zetac, dszetac, zetanem, dszetanem, zetacnem, dszetacnem, eta, etab, etacb, etap, xintegral, fext, kappa, dskappa, K, xi, FixedPar, t, P0, thalf_P, P2_on, P2, t0_P2, thalf_P2, tsigma, zc0_on, etacb_DC_on);
 catch ME
-    ME
+    disp(ME)
     disp(strcat('could not find solution at time t=',num2str(t)));
     SolFound = false;
-    sol = solold; %this works only if t>0
+
+    % Fallback solution object so the caller doesn't crash
+    if t > 0
+        sol = solold;     % previous converged solution exists
+    else
+        sol = solinit;    % at t=0, solold does not exist; return initial guess
+    end
 end
     
 sint = sol.x;
@@ -69,7 +75,12 @@ mss = griddedInterpolant(sint, Vint(4,:), 'spline');
 dsmss = griddedInterpolant(sint, Vint(5,:), 'spline');
 vs = griddedInterpolant(sint, Vint(8,:), 'spline');
 vkk = griddedInterpolant(sint, Vint(1,:)+C(sint).*Vint(2,:)+[Vint(1,1) cos(Psi(sint(2:end-1))).*Vint(8,2:end-1)./X(sint(2:end-1)) Vint(1,end)], 'spline');
-tss = griddedInterpolant(sint, 2*K*U(sint)+zeta(sint)-zetanem(sint)-(2*kappa(sint).*(C(sint)-C0)+zc0_on*zetac(sint)).*(C2(sint)-0.5*C(sint))+(-kappa(sint)*C0+zc0_on*0.5*zetac(sint)).*(C(sint)-C0+zc0_on*0.5*zetac(sint)./kappa(sint))+(etab+eta)*Vint(1,:)+(etab*C(sint)+eta*(C2(sint)-C1(sint))).*Vint(2,:)+(etab-eta)*[Vint(1,1) cos(Psi(sint(2:end-1))).*Vint(8,2:end-1)./X(sint(2:end-1)) Vint(1,end)], 'spline');
+
+% --- DCkk on the BVP grid (sint)
+mss_int = Vint(4,:);  % mss = v(4,:) 
+DCkk_int = (mss_int - 2*kappa(sint).*(C(sint)-C0) - zetac(sint) + zetacnem(sint)) ./ etacb; % DCkk term
+
+tss = griddedInterpolant(sint, 2*K*U(sint)+zeta(sint)-zetanem(sint)-(2*kappa(sint).*(C(sint)-C0)+zc0_on*zetac(sint)).*(C2(sint)-0.5*C(sint))+(-kappa(sint)*C0+zc0_on*0.5*zetac(sint)).*(C(sint)-C0+zc0_on*0.5*zetac(sint)/kappa(sint))+(etab+eta)*Vint(1,:)+(etab*C(sint)+eta*(C2(sint)-C1(sint))).*Vint(2,:)+(etab-eta)*[Vint(1,1) cos(Psi(sint(2:end-1))).*Vint(8,2:end-1)./X(sint(2:end-1)) Vint(1,end)] + etacb_DC_on*etacb*DCkk_int.*C2(sint), 'spline');
 
 ds2vn = griddedInterpolant(sint, derivatives(3,:), 'spline');
 

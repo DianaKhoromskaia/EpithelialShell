@@ -1,0 +1,49 @@
+%% Numerical parameters
+dt=0.00001; % initial time step
+tmax=300; % end time
+FixedPar = 'P'; % set to 'V' or 'P' for fixed or free volume, respectively
+dtmax = 0.0005; % maximal time step
+Adaptive = 'On'; % adaptive time step option
+tol = 0.002; % relative tolerance on adaptive time step
+%
+%%cut-off for nematic equations at SP and at NP of the surface in units of interval length:
+%
+eps1abs = 1e-4;
+eps2abs = 1e-4;
+%
+%relative and absolute error bounds for bvp-solver:
+%
+epsoderel = 1e-4;
+epsodeabs = 1e-6;
+%
+% set time parameters
+t = 0;
+tsigma = 0.05;
+%
+%% sizes of different grids
+nplot = 5e+3;       % for plotting and saving to file
+npoints = 1e+5;     % for initialising functions on sphere, and for derivatives
+%
+%% Physical parameters
+l_open = 0.8; % position of the opening
+R0 = 1;
+C0=0; % preferred curvature
+h = 1/3.5; % thickness of epithelium in units of R0
+eta = 1; % shear viscosity
+etab = 1; % bulk viscosity
+etacb = 0.05; % bulk bending viscosity
+etap = 1e-3; % pressure viscosity (for FixedPar='P')
+kappa0 = 0.015; % bending modulus
+K = 1; % bulk elastic modulus
+lc = 0.1*R0; % nematic length scale in units of R0
+P0 = 2.12; % value of the pressure difference
+thalf_P = 0.0005; %half-time of pressure application
+P2_on = 0; % switches on/off the second pressure application
+P2 = 2.12; % second pressure difference value
+t0_P2 = 10; % time when transition to P2 starts/half-time
+thalf_P2 = 0.0005; % smoothness/time width of transition
+xi = 0; % normal friction coefficient
+zetasrect=0.001; %width of the sigmoidal defining the 'Rectangle' active profile
+zc0_on=0;
+etacb_DC_on=1; % turns on/off the eta_cb*(DC_kk/Dt)*C_{ij} term in the tension constitutive eq.
+%U0_value = 0.53;
